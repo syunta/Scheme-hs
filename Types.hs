@@ -1,3 +1,8 @@
+module Types
+(
+  SObj(..)
+) where
+
 data SObj = SInt Int |
             Cell (SObj, SObj) |
             Nil
