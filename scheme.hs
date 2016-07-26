@@ -1,3 +1,4 @@
 data SObj = SInt Int |
-            Cell (SObj, SObj)
+            Cell (SObj, SObj) |
+            Nil
             deriving (Show)
