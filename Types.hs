@@ -11,5 +11,8 @@ data SObj = SInt Int |
 
 instance Show SObj where
   show (SInt x) = show x
-  show (SList xs) = "(" ++ ((intercalate " ") . (map show) $ xs) ++ ")"
-  show (SDotList xs y) = "(" ++ ((intercalate " ") . (map show) $ xs) ++ " . " ++ show y ++ ")"
+  show (SList xs) = "(" ++ (showElements xs) ++ ")"
+  show (SDotList xs y) = "(" ++ (showElements xs) ++ " . " ++ show y ++ ")"
+
+showElements :: [SObj] -> String
+showElements = (intercalate " ") . (map show)
