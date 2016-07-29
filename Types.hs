@@ -3,13 +3,13 @@ module Types
   SObj(..)
 ) where
 
+import Data.List
+
 data SObj = SInt Int |
-            Cell (SObj, SObj) |
+            SList [SObj] |
             Nil
 
 instance Show SObj where
   show (SInt x) = show x
-  show (Cell (x, Nil)) = "(" ++ show x ++ ")"
-  show (Cell (x, (Cell (y, z)))) = "(" ++ show x ++ " " ++ show (Cell (y, z)) ++ ")"
-  show (Cell (x, atom)) = "(" ++ show x ++ " . " ++ show atom ++ ")"
+  show (SList xs) = "(" ++ ((intercalate " ") . (map show) $ xs) ++ ")"
   show Nil = ""
