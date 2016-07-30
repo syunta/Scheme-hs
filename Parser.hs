@@ -6,7 +6,7 @@ tokenize = concat . (map separate) . words
 
 separate :: String -> [String]
 separate ts =
-  t $ span (not . (`elem` "()'")) ts
+  t $ span (not . (`elem` ".()'")) ts
     where
       t ("", "") = []
       t (xs, "") = [xs]
@@ -40,4 +40,5 @@ parseDotList (SList ls, t:ts) = (SDotList ls (parseAtom t), ts)
 parseAtom :: String -> SObj
 parseAtom token
   | not . (Nothing ==) $ mval = let (Just val) = mval in (SInt val)
+  | otherwise = SSymbol token
     where mval = (readMaybe token :: Maybe Int)
