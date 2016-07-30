@@ -20,13 +20,16 @@ parse str = let tokens = tokenize str in
 
 parseList :: (SObj, [String]) -> (SObj, [String])
 parseList (exps, ")":tokens) = (exps, tokens)
+parseList (exps, ".":tokens) = parseDotList (exps, tokens)
 parseList (exps, "(":tokens) =
   let (sls, restTokens) = parseList (SList [], tokens)
       (SList ls, restRestTokens) = parseList (exps, restTokens) in
   (SList (sls : ls), restRestTokens)
 parseList (exps, token:tokens) =
-  let (SList ls, restTokens) = parseList (exps, tokens) in
-  (SList (parseAtom token : ls), restTokens)
+  let result = parseList (exps, tokens) in
+    case result of
+      (SList ls, restTokens) -> (SList (parseAtom token : ls), restTokens)
+      (SDotList ls l, restTokens) -> (SDotList (parseAtom token : ls) l, restTokens)
 
 parseDotList :: (SObj, [String]) -> (SObj, [String])
 parseDotList (SList ls, "(":tokens) =
