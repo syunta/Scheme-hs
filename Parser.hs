@@ -33,9 +33,9 @@ parseList (exps, token:tokens) =
 
 parseDotList :: (SObj, [String]) -> (SObj, [String])
 parseDotList (SList ls, "(":tokens) =
-  let (sls, restTokens) = parseList (SList [], tokens) in
+  let (sls, ")":restTokens) = parseList (SList [], tokens) in
   (SDotList ls sls, restTokens)
-parseDotList (SList ls, t:ts) = (SDotList ls (parseAtom t), ts)
+parseDotList (SList ls, t:")":ts) = (SDotList ls (parseAtom t), ts)
 
 parseAtom :: String -> SObj
 parseAtom token
