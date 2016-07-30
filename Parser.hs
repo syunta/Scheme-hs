@@ -28,6 +28,12 @@ parseList (exps, token:tokens) =
   let (SList ls, restTokens) = parseList (exps, tokens) in
   (SList (parseAtom token : ls), restTokens)
 
+parseDotList :: (SObj, [String]) -> (SObj, [String])
+parseDotList (SList ls, "(":tokens) =
+  let (sls, restTokens) = parseList (SList [], tokens) in
+  (SDotList ls sls, restTokens)
+parseDotList (SList ls, t:ts) = (SDotList ls (parseAtom t), ts)
+
 parseAtom :: String -> SObj
 parseAtom token
   | not . (Nothing ==) $ mval = let (Just val) = mval in (SInt val)
