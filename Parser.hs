@@ -35,9 +35,9 @@ parseList (exps, t:ts) =
   (SList (parseAtom t : ls) tail, restTokens)
 
 parseDotList :: (SObj, [String]) -> (SObj, [String])
-parseDotList (SList ls _, "(":ts) =
-  let (sls, ")":restTokens) = parseList (SList [] Nil, ts) in
-  (SList ls sls, restTokens)
+parseDotList (SList ls1 _, "(":ts) =
+  let (SList ls2 tail, ")":restTokens) = parseList (SList [] Nil, ts) in
+  (SList (ls1 ++ ls2) tail, restTokens)
 parseDotList (SList ls _, t:")":ts) = (SList ls (parseAtom t), ts)
 
 parseAtom :: String -> SObj

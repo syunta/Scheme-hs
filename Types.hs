@@ -19,7 +19,6 @@ instance Show SObj where
   show (SSymbol x) = x
   show (SInt x) = show x
   show (SList xs Nil) = "(" ++ (showElements xs) ++ ")"
-  show (SList xs (SList [] Nil)) = "(" ++ (showElements xs) ++ ")"
   show (SList xs obj) = "(" ++ (showElements xs) ++ " . " ++ show obj ++ ")"
 
 showElements :: [SObj] -> String
