@@ -1,6 +1,8 @@
 module Types
 (
-  SObj(..)
+  SObj(..),
+  Env,
+  Frame
 ) where
 
 import Data.List
@@ -9,6 +11,9 @@ data SObj = SInt Int |
             SSymbol String |
             SList [SObj] SObj |
             Nil
+
+type Env = [Frame]
+type Frame = ([String], [SObj])
 
 instance Show SObj where
   show (SSymbol x) = x
