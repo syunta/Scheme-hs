@@ -1,3 +1,8 @@
+module Parser
+(
+  parse
+) where
+
 import Types
 import Text.Read
 
