@@ -24,20 +24,19 @@ parse str = let tokens = tokenize str in
                  (t:ts) -> (parseAtom t, ts)
 
 parseList :: (SObj, [String]) -> (SObj, [String])
-parseList (exps, ")":tokens) = (exps, tokens)
-parseList (exps, ".":tokens) = parseDotList (exps, tokens)
-parseList (exps, "(":tokens) =
-  let (sls, restTokens) = parseList (SList [] Nil, tokens)
-      (SList ls obj, restRestTokens) = parseList (exps, restTokens) in
-  (SList (sls : ls) obj, restRestTokens)
-parseList (exps, token:tokens) =
-  let result = parseList (exps, tokens) in
-    case result of
-      (SList ls obj, restTokens) -> (SList (parseAtom token : ls) obj, restTokens)
+parseList (exps, ")":ts) = (exps, ts)
+parseList (exps, ".":ts) = parseDotList (exps, ts)
+parseList (exps, "(":ts) =
+  let (sls, restTokens) = parseList (SList [] Nil, ts)
+      (SList ls tail, restRestTokens) = parseList (exps, restTokens) in
+  (SList (sls : ls) tail, restRestTokens)
+parseList (exps, t:ts) =
+  let (SList ls tail, restTokens) = parseList (exps, ts) in
+  (SList (parseAtom t : ls) tail, restTokens)
 
 parseDotList :: (SObj, [String]) -> (SObj, [String])
-parseDotList (SList ls _, "(":tokens) =
-  let (sls, ")":restTokens) = parseList (SList [] Nil, tokens) in
+parseDotList (SList ls _, "(":ts) =
+  let (sls, ")":restTokens) = parseList (SList [] Nil, ts) in
   (SList ls sls, restTokens)
 parseDotList (SList ls _, t:")":ts) = (SList ls (parseAtom t), ts)
 
