@@ -6,15 +6,15 @@ module Types
 import Data.List
 
 data SObj = SInt Int |
-            SList [SObj] |
-            SDotList [SObj] SObj |
-            SSymbol String
+            SSymbol String |
+            SList [SObj] SObj |
+            Nil
 
 instance Show SObj where
   show (SSymbol x) = x
   show (SInt x) = show x
-  show (SList xs) = "(" ++ (showElements xs) ++ ")"
-  show (SDotList xs y) = "(" ++ (showElements xs) ++ " . " ++ show y ++ ")"
+  show (SList xs Nil) = "(" ++ (showElements xs) ++ ")"
+  show (SList xs obj) = "(" ++ (showElements xs) ++ " . " ++ show obj ++ ")"
 
 showElements :: [SObj] -> String
 showElements = (intercalate " ") . (map show)
