@@ -10,8 +10,8 @@ import Data.List
 data SObj = SInt Int |
             SSymbol String |
             SList [SObj] SObj |
-            Nil |
-            Primitive ([SObj] -> SObj)
+            Nil
+            deriving Eq
 
 type Env = [Frame]
 type Frame = ([String], [SObj])
