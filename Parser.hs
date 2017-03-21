@@ -23,10 +23,15 @@ parse str = parseTokens (tokenize str)
 
 parseTokens :: [String] -> (SObj, [String])
 parseTokens ("(":ts) = parseList (SList [] Nil, ts)
+parseTokens ("'":ts) = parseQuote ts
 parseTokens (t:ts)   = (parseAtom t, ts)
 
 parseList :: (SObj, [String]) -> (SObj, [String])
 parseList (exps, ")":ts) = (exps, ts)
+parseList (exps, "'":ts) =
+  let (qls, restTokens) = parseQuote ts
+      (SList ls tail, restRestTokens) = parseList (exps, restTokens) in
+  (SList (qls : ls) tail, restRestTokens)
 parseList (exps, ".":ts) = parseDotList (exps, ts)
 parseList (exps, "(":ts) =
   let (sls, restTokens) = parseList (SList [] Nil, ts)
