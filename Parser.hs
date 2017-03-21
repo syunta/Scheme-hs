@@ -36,6 +36,11 @@ parseList (exps, t:ts) =
   let (SList ls tail, restTokens) = parseList (exps, ts) in
   (SList (parseAtom t : ls) tail, restTokens)
 
+parseQuote :: [String] -> (SObj, [String])
+parseQuote ts =
+  let (exps, restTokens) = parseTokens ts in
+    (SList [SSymbol "quote", exps] Nil, restTokens)
+
 parseDotList :: (SObj, [String]) -> (SObj, [String])
 parseDotList (SList ls1 _, "(":ts) =
   let (SList ls2 tail, ")":restTokens) = parseList (SList [] Nil, ts) in
