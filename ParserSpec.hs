@@ -15,6 +15,9 @@ main = hspec $ do
       parse "(1 . 2)" `shouldBe` (SList [SInt 1] (SInt 2), [])
     it "parses number to sobj" $ do
       parse "1" `shouldBe` (SInt 1, [])
+    it "parses variable to sobj" $ do
+      parse "a" `shouldBe` (SSymbol "a", [])
+      parse "(+ x 2)" `shouldBe` (SList [SSymbol "+", SSymbol "x", SInt 2] Nil, [])
     it "parses a unit of syntax" $ do
       parse "1 2" `shouldBe` (SInt 1, ["2"])
       parse "(1) (2 3)" `shouldBe` (SList [SInt 1] Nil, ["(", "2", "3", ")"])
