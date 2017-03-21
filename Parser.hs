@@ -19,9 +19,11 @@ separate ts =
       t (xs, ys) = [xs, [head ys]] ++ separate (tail ys)
 
 parse :: String -> (SObj, [String])
-parse str = let tokens = tokenize str in
-  case tokens of ("(":ts) -> parseList (SList [] Nil, ts)
-                 (t:ts) -> (parseAtom t, ts)
+parse str = parseTokens (tokenize str)
+
+parseTokens :: [String] -> (SObj, [String])
+parseTokens ("(":ts) = parseList (SList [] Nil, ts)
+parseTokens (t:ts)   = (parseAtom t, ts)
 
 parseList :: (SObj, [String]) -> (SObj, [String])
 parseList (exps, ")":ts) = (exps, ts)
