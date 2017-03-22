@@ -11,6 +11,7 @@ main = hspec $ do
       parse "(1 (2 3))" `shouldBe` (SList [SInt 1, SList [SInt 2, SInt 3] Nil] Nil, [])
     it "parses empty list to sobj" $ do
       parse "()" `shouldBe` (SList [] Nil, [])
+      parse "'()" `shouldBe` (SList [SSymbol "quote", SList [] Nil] Nil, [])
     it "parses quote to sobj" $ do
       parse "'hoge" `shouldBe` (SList [SSymbol "quote", SSymbol "hoge"] Nil, [])
       parse "'(hoge)" `shouldBe` (SList [SSymbol "quote", SList [SSymbol "hoge"] Nil] Nil, [])
