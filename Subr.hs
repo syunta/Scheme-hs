@@ -5,8 +5,8 @@ module Subr
 
 import Types
 
-primitiveProcedures :: [(String, [SObj] -> SObj)]
-primitiveProcedures = [("+", primPlus)]
+primitiveProcedures :: [(String, SObj)]
+primitiveProcedures = [("+", Primitive "+" primPlus)]
 
 primPlus :: [SObj] -> SObj
 primPlus args = foldl plus (SInt 0) args
