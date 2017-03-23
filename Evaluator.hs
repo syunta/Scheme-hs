@@ -20,4 +20,5 @@ extendEnv :: [String] -> [SObj] -> Env -> Env
 extendEnv vars vals e = (vars, vals) : e
 
 eval :: SObj -> Env -> SObj
+eval (SList [SSymbol "quote", exp] _) env = exp
 eval exp env = exp -- self evaluating
