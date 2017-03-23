@@ -1,3 +1,8 @@
+module Evaluator
+(
+  eval, initialEnv
+) where
+
 import Types
 import Parser
 import Subr
