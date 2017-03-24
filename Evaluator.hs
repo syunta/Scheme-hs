@@ -25,3 +25,8 @@ eval (SSymbol x) env = (SSymbol x)
 eval (SInt x)    env = (SInt x)
 -- quotation
 eval (SList [SSymbol "quote", exp] _) env = exp
+-- application
+eval (SList (op:args) Nil) env = apply (eval op env) (map (flip eval env) args)
+
+apply :: SObj -> [SObj] -> SObj
+apply (Primitive x f) args = f args
