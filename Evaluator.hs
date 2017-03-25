@@ -20,10 +20,10 @@ extendEnv :: [String] -> [SObj] -> Env -> Env
 extendEnv vars vals e = (vars, vals) : e
 
 lookupEnv :: String -> Env -> SObj
-lookupEnv _ [] = Nil -- TODO: Unbound varible error
+lookupEnv _ [] = Nil -- TODO: Unbound variable error
 lookupEnv x ((vars, vals):fs) = scanEnv vars vals
   where
-    scanEnv []        _         = lookupEnv x fs
+    scanEnv [] _ = lookupEnv x fs
     scanEnv (var:vrs) (val:vls)
       | x == var = val
       | otherwise = scanEnv vrs vls
