@@ -18,3 +18,5 @@ main = hspec $ do
     it "evaluates primitive application" $ do
       eval (parse' "(+ 2 4)") initialEnv `shouldBe` parse' "6"
       eval (parse' "(+ 2 4 10)") initialEnv `shouldBe` parse' "16"
+      eval (parse' "(- 6 4)") initialEnv `shouldBe` parse' "2"
+      eval (parse' "(- 10 3 2)") initialEnv `shouldBe` parse' "5"
