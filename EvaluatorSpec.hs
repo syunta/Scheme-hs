@@ -21,3 +21,4 @@ main = hspec $ do
       eval (parse' "(- 6 4)") initialEnv `shouldBe` parse' "2"
       eval (parse' "(- 10 3 2)") initialEnv `shouldBe` parse' "5"
       eval (parse' "(* 2 3 5)") initialEnv `shouldBe` parse' "30"
+      eval (parse' "(/ 10 2)") initialEnv `shouldBe` parse' "5"
