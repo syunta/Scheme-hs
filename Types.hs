@@ -10,6 +10,7 @@ import Data.List
 data SObj = SInt Int |
             SSymbol String |
             SList [SObj] SObj |
+            SBool Bool |
             Nil |
             Primitive String ([SObj] -> SObj)
 
@@ -19,6 +20,8 @@ type Frame = ([String], [SObj])
 instance Show SObj where
   show (SSymbol x) = x
   show (SInt x) = show x
+  show (SBool True) = "#t"
+  show (SBool False) = "#f"
   show (Primitive x _) = show "<subr " ++ x ++ " >"
   show (SList ((SSymbol "quote"):xs) Nil) = showElements xs
   show (SList xs Nil) = "(" ++ (showElements xs) ++ ")"
@@ -31,6 +34,9 @@ instance Eq SObj where -- to pass specs
   (SInt x)    == (SInt y)    = x == y
   (SInt x)    == _           = False
   _           == (SInt y)    = False
+  (SBool x)   == (SBool y)   = x == y
+  (SBool x)   == _           = False
+  _           == (SBool y)   = False
   Nil         == Nil         = True
   Nil         == _           = False
   _           == Nil         = False

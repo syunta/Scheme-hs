@@ -55,5 +55,7 @@ parseDotList (SList ls _, t:")":ts) = (SList ls (parseAtom t), ts)
 parseAtom :: String -> SObj
 parseAtom token
   | not . (Nothing ==) $ mval = let (Just val) = mval in (SInt val)
+  | token == "#t" = SBool True
+  | token == "#f" = SBool False
   | otherwise = SSymbol token
     where mval = (readMaybe token :: Maybe Int)
