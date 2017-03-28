@@ -10,13 +10,12 @@ primitiveProcedures = [("+", Primitive "+" primPlus),
                        ("-", Primitive "-" primMinus)]
 
 primPlus :: [SObj] -> SObj
-primPlus args = foldl1 plus args
+primPlus args = foldl1 (calc (+)) args
 
 primMinus :: [SObj] -> SObj
-primMinus args = foldl1 minus args
+primMinus args = foldl1 (calc (-)) args
 
-plus :: SObj -> SObj -> SObj
-plus (SInt x) (SInt y) = SInt (x + y)
-
-minus :: SObj -> SObj -> SObj
-minus (SInt x) (SInt y) = SInt (x - y)
+calc :: (Int -> Int -> Int) -> (SObj -> SObj -> SObj)
+calc f = fn
+  where
+    fn (SInt x) (SInt y) = SInt (f x y)
