@@ -30,27 +30,27 @@ lookupEnv x ((vars, vals):fs) = scanEnv vars vals
 
 eval :: SObj -> Env -> SObj
 -- self evaluating
-eval (SInt x) env = (SInt x)
-eval (SBool x) env = (SBool x)
+eval (SInt x) _ = (SInt x)
+eval (SBool x) _ = (SBool x)
 -- variable
 eval (SSymbol x) env = lookupEnv x env
 -- quotation
 eval (SList [SSymbol "quote", exp] _) env = exp
 -- if
-eval (SList ((SSymbol "if"):exps) _) env = evalIf (SList exps Nil) env
+eval (SList ((SSymbol "if"):exps) _) env = evalIf exps env
 -- application
-eval (SList (op:args) Nil) env = apply (eval op env) (map (flip eval env) args)
+eval (SList (op:args) _) env = apply (eval op env) (map (flip eval env) args)
 
 apply :: SObj -> [SObj] -> SObj
 apply (Primitive x f) args = f args
 
-evalIf :: SObj -> Env -> SObj
-evalIf (SList [pred, cnsq] _) env =
+evalIf :: [SObj] -> Env -> SObj
+evalIf [pred, cnsq] env =
   let result = eval pred env in
     case result of
       (SBool False) -> (SBool False)
       _             -> eval cnsq env
-evalIf (SList [pred, cnsq, alt] _) env =
+evalIf [pred, cnsq, alt] env =
   let result = eval pred env in
     case result of
       (SBool False) -> eval alt env
