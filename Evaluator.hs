@@ -50,3 +50,8 @@ evalIf (SList [pred, cnsq] _) env =
     case result of
       (SBool False) -> (SBool False)
       _             -> eval cnsq env
+evalIf (SList [pred, cnsq, alt] _) env =
+  let result = eval pred env in
+    case result of
+      (SBool False) -> eval alt env
+      _             -> eval cnsq env
