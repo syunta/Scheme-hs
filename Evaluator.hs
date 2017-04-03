@@ -31,6 +31,7 @@ lookupEnv x ((vars, vals):fs) = scanEnv vars vals
 eval :: SObj -> Env -> SObj
 -- self evaluating
 eval (SInt x) env = (SInt x)
+eval (SBool x) env = (SBool x)
 -- variable
 eval (SSymbol x) env = lookupEnv x env
 -- quotation

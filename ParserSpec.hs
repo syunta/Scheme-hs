@@ -25,6 +25,7 @@ main = hspec $ do
       parse "(+ x 2)" `shouldBe` (SList [SSymbol "+", SSymbol "x", SInt 2] Nil, [])
     it "parses bool to sobj" $ do
       parse "#t" `shouldBe` (SBool True, [])
+      parse "#f" `shouldBe` (SBool False, [])
     it "parses a unit of syntax" $ do
       parse "1 2" `shouldBe` (SInt 1, ["2"])
       parse "(1) (2 3)" `shouldBe` (SList [SInt 1] Nil, ["(", "2", "3", ")"])
