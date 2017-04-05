@@ -13,7 +13,7 @@ run = do
       putStrLn (show val)
       case rest of
         [] -> run
-        _  -> do evalPrint' rest
+        _  -> do evalRestPrint rest
                  run
 
 readPrompt :: IO String
@@ -28,12 +28,14 @@ evalPrint x = do
   putStrLn (show val)
   return rest
 
-evalPrint' :: [String] -> IO [String]
-evalPrint' x = do
+evalRestPrint :: [String] -> IO ()
+evalRestPrint x = do
   let (expr, rest) = parseTokens x
       (val, env)   = eval (expr, initialEnv)
   putStrLn (show val)
-  return rest
+  case rest of
+    [] -> return ()
+    _  -> evalRestPrint rest
 
 main :: IO ()
 main = run
