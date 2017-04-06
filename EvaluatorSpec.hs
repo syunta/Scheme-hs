@@ -18,6 +18,8 @@ main = hspec $ do
       eval' (parse' "'10", initialEnv) `shouldBe` parse' "10"
       eval' (parse' "'(1 2 3)", initialEnv) `shouldBe` parse' "(1 2 3)"
       eval' (parse' "'hoge", initialEnv) `shouldBe` parse' "hoge"
+    -- it "evaluates define syntax" $ do
+    --   eval' (parse' "(begin (define hoge 20) hoge)", initialEnv) `shouldBe` parse' "20"
     it "evaluates if syntax" $ do
       eval' (parse' "(if #f 3)", initialEnv) `shouldBe` parse' "#f"
       eval' (parse' "(if #t 3)", initialEnv) `shouldBe` parse' "3"
