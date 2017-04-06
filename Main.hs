@@ -1,41 +1,35 @@
 import Parser
 import Evaluator
+import Types
 
-run :: IO ()
-run = do
+run :: Env -> IO ()
+run env = do
   x <- readPrompt
   case x of
     "exit" -> return ()
-    ""     -> run
+    ""     -> run env
     _      -> do
       let (expr, rest) = parse x
-          (val, env)   = eval (expr, initialEnv)
+          (val, newEnv)   = eval (expr, env)
       putStrLn (show val)
       case rest of
-        [] -> run
-        _  -> do evalRestPrint rest
-                 run
+        [] -> run newEnv
+        _  -> do newEnv' <- evalRestPrint (rest, newEnv)
+                 run newEnv'
 
 readPrompt :: IO String
 readPrompt = do
   putStr "scheme>"
   getLine
 
-evalPrint :: String -> IO [String]
-evalPrint x = do
-  let (expr, rest) = parse x
-      (val, env)   = eval (expr, initialEnv)
-  putStrLn (show val)
-  return rest
-
-evalRestPrint :: [String] -> IO ()
-evalRestPrint x = do
+evalRestPrint :: ([String], Env) -> IO Env
+evalRestPrint (x, env) = do
   let (expr, rest) = parseTokens x
-      (val, env)   = eval (expr, initialEnv)
+      (val, newEnv)   = eval (expr, env)
   putStrLn (show val)
   case rest of
-    [] -> return ()
-    _  -> evalRestPrint rest
+    [] -> return newEnv
+    _  -> evalRestPrint (rest, newEnv)
 
 main :: IO ()
-main = run
+main = run initialEnv
