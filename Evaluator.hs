@@ -11,10 +11,10 @@ initialEnv :: Env
 initialEnv = extendEnv primitiveProcedureNames primitiveProcedureObjects []
 
 primitiveProcedureNames :: [String]
-primitiveProcedureNames = map fst primitiveProcedures
+primitiveProcedureNames = map (\(n, _ , _) -> n) primitiveProcedures
 
 primitiveProcedureObjects :: [SObj]
-primitiveProcedureObjects = map snd primitiveProcedures
+primitiveProcedureObjects = map (\(_, p , _) -> p) primitiveProcedures
 
 extendEnv :: [String] -> [SObj] -> Env -> Env
 extendEnv vars vals e = (vars, vals) : e
@@ -45,7 +45,7 @@ eval (SList (op:args) _, env) =
   (apply ((fst . eval) (op, env)) (map (fst . eval) (map ((flip (,)) env) args)), env)
 
 apply :: SObj -> [SObj] -> SObj
-apply (Primitive x f) args = f args
+apply (Primitive x) args = (getProc x primitiveProcedures) args
 
 evalIf :: ([SObj], Env) -> (SObj, Env)
 evalIf ([pred, cnsq], env) =

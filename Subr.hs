@@ -1,15 +1,20 @@
 module Subr
 (
-  primitiveProcedures
+  primitiveProcedures, getProc
 ) where
 
 import Types
 
-primitiveProcedures :: [(String, SObj)]
-primitiveProcedures = [("+", Primitive "+" primPlus),
-                       ("-", Primitive "-" primMinus),
-                       ("*", Primitive "*" primSub),
-                       ("/", Primitive "/" primDiv)]
+primitiveProcedures :: [(String, SObj, [SObj] -> SObj)]
+primitiveProcedures = [("+", Primitive "+", primPlus),
+                       ("-", Primitive "-", primMinus),
+                       ("*", Primitive "*", primSub),
+                       ("/", Primitive "/", primDiv)]
+
+getProc :: String -> [(String, SObj, [SObj] -> SObj)] -> ([SObj] -> SObj)
+getProc key ((x, _, f):xs)
+  | key == x = f
+  | otherwise = getProc key xs
 
 primPlus :: [SObj] -> SObj
 primPlus args = foldl1 (calc (+)) args
