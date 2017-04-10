@@ -40,6 +40,8 @@ eval (SList [SSymbol "quote", exp] _, env) = (exp, env)
 eval (SList ((SSymbol "define"):exps) _, env) = evalDef (exps, env)
 -- if
 eval (SList ((SSymbol "if"):exps) _, env) = evalIf (exps, env)
+-- begin
+eval (SList ((SSymbol "begin"):exps) _, env) = evalSeq (exps, env)
 -- application
 eval (SList (op:args) _, env) =
   (apply ((fst . eval) (op, env)) (map (fst . eval) (map ((flip (,)) env) args)), env)
@@ -58,6 +60,12 @@ evalIf ([pred, cnsq, alt], env) =
     case result of
       (SBool False, env) -> eval (alt, env)
       _                  -> eval (cnsq, env)
+
+evalSeq :: ([SObj], Env) -> (SObj, Env)
+evalSeq (xs, env) = iter (Nil, env) xs
+  where
+    iter x        []       = x
+    iter (_, env) (exp:exps) = iter (eval (exp, env)) exps
 
 evalDef :: ([SObj], Env) -> (SObj, Env)
 evalDef ([var, val], env) = (SSymbol "ok", defineVar var val env)

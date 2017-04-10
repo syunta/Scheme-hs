@@ -18,14 +18,16 @@ main = hspec $ do
       eval' (parse' "'10", initialEnv) `shouldBe` parse' "10"
       eval' (parse' "'(1 2 3)", initialEnv) `shouldBe` parse' "(1 2 3)"
       eval' (parse' "'hoge", initialEnv) `shouldBe` parse' "hoge"
-    -- it "evaluates define syntax" $ do
-    --   eval' (parse' "(begin (define hoge 20) hoge)", initialEnv) `shouldBe` parse' "20"
+    it "evaluates define syntax" $ do
+      eval' (parse' "(begin (define hoge 20) hoge)", initialEnv) `shouldBe` parse' "20"
     it "evaluates if syntax" $ do
       eval' (parse' "(if #f 3)", initialEnv) `shouldBe` parse' "#f"
       eval' (parse' "(if #t 3)", initialEnv) `shouldBe` parse' "3"
       eval' (parse' "(if 10 10)", initialEnv) `shouldBe` parse' "10"
       eval' (parse' "(if #f 1 0)", initialEnv) `shouldBe` parse' "0"
       eval' (parse' "(if #t 1 0)", initialEnv) `shouldBe` parse' "1"
+    it "evaluates begin syntax" $ do
+      eval' (parse' "(begin 1 2 3 4 5)", initialEnv) `shouldBe` parse' "5"
     it "evaluates primitive application" $ do
       eval' (parse' "(+ 2 4)", initialEnv) `shouldBe` parse' "6"
       eval' (parse' "(+ 2 4 10)", initialEnv) `shouldBe` parse' "16"
