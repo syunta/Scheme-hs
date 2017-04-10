@@ -36,6 +36,8 @@ eval (SBool x, env) = (SBool x, env)
 eval (SSymbol x, env) = (lookupEnv x env, env)
 -- quotation
 eval (SList [SSymbol "quote", exp] _, env) = (exp, env)
+-- assignment
+eval (SList ((SSymbol "set!"):exps) _, env) = evalSet (exps, env)
 -- definition
 eval (SList ((SSymbol "define"):exps) _, env) = evalDef (exps, env)
 -- if
@@ -66,6 +68,15 @@ evalSeq (xs, env) = iter (Nil, env) xs
   where
     iter x        []       = x
     iter (_, env) (exp:exps) = iter (eval (exp, env)) exps
+
+evalSet :: ([SObj], Env) -> (SObj, Env)
+evalSet ([SSymbol var, val], env) = (SSymbol "ok", setVar var val env)
+
+setVar :: String -> SObj -> Env -> Env
+setVar var val [] = [] -- TODO: Symbol not found error
+setVar var val ((vars, vals):fs)
+  | var `elem` vars = (makeFrame var val vars vals [] []) : fs
+  | otherwise       = (vars, vals) : setVar var val fs
 
 evalDef :: ([SObj], Env) -> (SObj, Env)
 evalDef ([SSymbol var, val], env) = (SSymbol "ok", defineVar var val env)
