@@ -75,7 +75,7 @@ evalSet ([SSymbol var, val], env) = (SSymbol "ok", setVar var val env)
 setVar :: String -> SObj -> Env -> Env
 setVar var val [] = [] -- TODO: Symbol not found error
 setVar var val ((vars, vals):fs)
-  | var `elem` vars = (makeFrame var val vars vals [] []) : fs
+  | var `elem` vars = (replaceVal var val (vars, vals)) : fs
   | otherwise       = (vars, vals) : setVar var val fs
 
 evalDef :: ([SObj], Env) -> (SObj, Env)
@@ -83,7 +83,10 @@ evalDef ([SSymbol var, val], env) = (SSymbol "ok", defineVar var val env)
 
 defineVar :: String -> SObj -> Env -> Env
 defineVar var val [] = [([var], [val])]
-defineVar var val ((vars, vals):fs) = (makeFrame var val vars vals [] []) : fs
+defineVar var val (f:fs) = (replaceVal var val f) : fs
+
+replaceVal :: String -> SObj -> Frame -> Frame
+replaceVal var val (vars, vals) = makeFrame var val vars vals [] []
 
 makeFrame :: String -> SObj -> [String] -> [SObj] -> [String] -> [SObj] -> Frame
 makeFrame var val [] _ vars vals = (var:vars, val:vals)
