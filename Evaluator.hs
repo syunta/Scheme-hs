@@ -68,13 +68,14 @@ evalSeq (xs, env) = iter (Nil, env) xs
     iter (_, env) (exp:exps) = iter (eval (exp, env)) exps
 
 evalDef :: ([SObj], Env) -> (SObj, Env)
-evalDef ([var, val], env) = (SSymbol "ok", defineVar var val env)
+evalDef ([SSymbol var, val], env) = (SSymbol "ok", defineVar var val env)
 
-defineVar :: SObj -> SObj -> Env -> Env
-defineVar (SSymbol var) val [] = [([var], [val])]
-defineVar (SSymbol var) val ((vars, vals):fs) = (makeFrame vars vals [] []) : fs
-  where
-    makeFrame [] _ xs ys = (var:xs, val:ys)
-    makeFrame (x:vrs) (y:vls) xs ys
-      | x == var  = (var:vrs ++ xs, val:vls ++ ys)
-      | otherwise = makeFrame vrs vls (x:xs) (y:ys)
+defineVar :: String -> SObj -> Env -> Env
+defineVar var val [] = [([var], [val])]
+defineVar var val ((vars, vals):fs) = (makeFrame var val vars vals [] []) : fs
+
+makeFrame :: String -> SObj -> [String] -> [SObj] -> [String] -> [SObj] -> Frame
+makeFrame var val [] _ vars vals = (var:vars, val:vals)
+makeFrame var val (x:xs) (y:ys) vars vals
+  | x == var  = (var:xs ++ vars, val:ys ++ vals)
+  | otherwise = makeFrame var val xs ys (x:vars) (y:vals)
