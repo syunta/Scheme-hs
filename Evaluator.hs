@@ -82,7 +82,7 @@ evalDef :: ([SObj], Env) -> (SObj, Env)
 evalDef ([SSymbol var, val], env) = (SSymbol "ok", defineVar var val env)
 
 defineVar :: String -> SObj -> Env -> Env
-defineVar var val [] = [([var], [val])]
+defineVar var val (([], _):fs) = ([var], [val]) : fs
 defineVar var val (f:fs) = (replaceVal var val f) : fs
 
 replaceVal :: String -> SObj -> Frame -> Frame
