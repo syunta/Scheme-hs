@@ -66,8 +66,9 @@ evalIf ([pred, cnsq, alt], env) =
       _                  -> eval (cnsq, env)
 
 makeLambda :: [SObj] -> SObj
-makeLambda (Nil:body) = SLambda [] body
-makeLambda ((SList exps Nil):body) = SLambda (makeParams exps) body
+makeLambda (Nil:body) = SLambda [] "" body
+makeLambda ((SList exps Nil):body) = SLambda (makeParams exps) "" body
+makeLambda ((SList exps (SSymbol tail)):body) = SLambda (makeParams exps) tail body
 
 makeParams :: [SObj] -> [String]
 makeParams [] = []
