@@ -11,6 +11,7 @@ data SObj = SInt Int |
             SSymbol String |
             SList [SObj] SObj |
             SBool Bool |
+            SLambda [String] [SObj] |
             Nil |
             Primitive String
             deriving Eq
@@ -24,6 +25,7 @@ instance Show SObj where
   show (SInt x) = show x
   show (SBool True) = "#t"
   show (SBool False) = "#f"
+  show (SLambda params _) = "<closure " ++ show params ++ ">"
   show (Primitive x) = "<subr " ++ x ++ " >"
   show (SList ((SSymbol "quote"):xs) Nil) = showElements xs
   show (SList xs Nil) = "(" ++ (showElements xs) ++ ")"
