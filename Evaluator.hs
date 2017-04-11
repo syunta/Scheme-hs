@@ -48,10 +48,21 @@ eval (SList ((SSymbol "lambda"):exps) _, env) = (makeLambda exps env, env)
 eval (SList ((SSymbol "begin"):exps) _, env) = evalSeq (exps, env)
 -- application
 eval (SList (op:args) _, env) =
-  (apply ((fst . eval) (op, env)) (map (fst . eval) (map ((flip (,)) env) args)), env)
+  let (op', env')    = eval (op, env)
+      (args', env'') = evalArgs (args, env') in
+  (apply op' args', env'')
+
+evalArgs :: ([SObj], Env) -> ([SObj], Env)
+evalArgs (xs, env) = iter ([], env) xs
+  where
+    iter (ys, env) []         = (reverse ys, env)
+    iter (ys, env) (exp:exps) =
+      let (exp', env') = eval (exp, env) in
+      iter ((exp':ys), env') exps
 
 apply :: SObj -> [SObj] -> SObj
 apply (Primitive x) args = (getProc x primitiveProcedures) args
+-- apply (SLambda ps "" body env) args = evalSeq (body, env)
 
 evalIf :: ([SObj], Env) -> (SObj, Env)
 evalIf ([pred, cnsq], env) =
@@ -77,7 +88,7 @@ makeParams ((SSymbol x):xs) = x : makeParams xs
 evalSeq :: ([SObj], Env) -> (SObj, Env)
 evalSeq (xs, env) = iter (Nil, env) xs
   where
-    iter x        []       = x
+    iter x        []         = x
     iter (_, env) (exp:exps) = iter (eval (exp, env)) exps
 
 evalSet :: ([SObj], Env) -> (SObj, Env)
