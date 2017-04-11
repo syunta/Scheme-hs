@@ -19,6 +19,7 @@ type Env = [Frame]
 type Frame = ([String], [SObj])
 
 instance Show SObj where
+  show Nil = "nil"
   show (SSymbol x) = x
   show (SInt x) = show x
   show (SBool True) = "#t"

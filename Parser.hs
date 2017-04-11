@@ -15,6 +15,7 @@ separate ts =
     where
       t ("", "") = []
       t (xs, "") = [xs]
+      t ("", ('(':')':ys)) = ["()"] ++ separate ys
       t ("", ys) = [[head ys]] ++ separate (tail ys)
       t (xs, ys) = [xs, [head ys]] ++ separate (tail ys)
 
@@ -57,5 +58,6 @@ parseAtom token
   | not . (Nothing ==) $ mval = let (Just val) = mval in (SInt val)
   | token == "#t" = SBool True
   | token == "#f" = SBool False
+  | token == "()" = Nil
   | otherwise = SSymbol token
     where mval = (readMaybe token :: Maybe Int)
