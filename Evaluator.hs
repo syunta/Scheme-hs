@@ -43,7 +43,7 @@ eval (SList ((SSymbol "define"):exps) _, env) = evalDef (exps, env)
 -- if
 eval (SList ((SSymbol "if"):exps) _, env) = evalIf (exps, env)
 -- lambda
-eval (SList ((SSymbol "lambda"):exps) _, env) = (makeLambda exps, env)
+eval (SList ((SSymbol "lambda"):exps) _, env) = (makeLambda exps env, env)
 -- begin
 eval (SList ((SSymbol "begin"):exps) _, env) = evalSeq (exps, env)
 -- application
@@ -65,7 +65,7 @@ evalIf ([pred, cnsq, alt], env) =
       (SBool False, env) -> eval (alt, env)
       _                  -> eval (cnsq, env)
 
-makeLambda :: [SObj] -> SObj
+makeLambda :: [SObj] -> Env -> SObj
 makeLambda (Nil:body) = SLambda [] "" body
 makeLambda ((SList exps Nil):body) = SLambda (makeParams exps) "" body
 makeLambda ((SList exps (SSymbol tail)):body) = SLambda (makeParams exps) tail body
