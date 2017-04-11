@@ -42,6 +42,8 @@ eval (SList ((SSymbol "set!"):exps) _, env) = evalSet (exps, env)
 eval (SList ((SSymbol "define"):exps) _, env) = evalDef (exps, env)
 -- if
 eval (SList ((SSymbol "if"):exps) _, env) = evalIf (exps, env)
+-- lambda
+eval (SList ((SSymbol "lambda"):exps) _, env) = (makeLambda exps, env)
 -- begin
 eval (SList ((SSymbol "begin"):exps) _, env) = evalSeq (exps, env)
 -- application
@@ -62,6 +64,14 @@ evalIf ([pred, cnsq, alt], env) =
     case result of
       (SBool False, env) -> eval (alt, env)
       _                  -> eval (cnsq, env)
+
+makeLambda :: [SObj] -> SObj
+makeLambda (Nil:body) = SLambda [] body
+makeLambda ((SList exps Nil):body) = SLambda (makeParams exps) body
+
+makeParams :: [SObj] -> [String]
+makeParams [] = []
+makeParams ((SSymbol x):xs) = x : makeParams xs
 
 evalSeq :: ([SObj], Env) -> (SObj, Env)
 evalSeq (xs, env) = iter (Nil, env) xs
