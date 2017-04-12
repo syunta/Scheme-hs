@@ -50,7 +50,7 @@ eval (SList ((SSymbol "begin"):exps) _, env) = evalSeq (exps, env)
 eval (SList (op:args) _, env) =
   let (op', env')    = eval (op, env)
       (args', env'') = evalArgs (args, env') in
-  (apply op' args', env'')
+  apply op' args' env''
 
 evalArgs :: ([SObj], Env) -> ([SObj], Env)
 evalArgs (xs, env) = iter ([], env) xs
@@ -60,9 +60,9 @@ evalArgs (xs, env) = iter ([], env) xs
       let (exp', env') = eval (exp, env) in
       iter ((exp':ys), env') exps
 
-apply :: SObj -> [SObj] -> SObj
-apply (Primitive x) args = (getProc x primitiveProcedures) args
--- apply (SLambda ps "" body env) args = evalSeq (body, env)
+apply :: SObj -> [SObj] -> Env -> (SObj, Env)
+apply (Primitive x) args env = ((getProc x primitiveProcedures) args, env)
+--apply (SLambda ps "" body env) args = evalSeq (body, env)
 
 evalIf :: ([SObj], Env) -> (SObj, Env)
 evalIf ([pred, cnsq], env) =
