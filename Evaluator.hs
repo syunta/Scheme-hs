@@ -101,6 +101,10 @@ setVar var val ((vars, vals):fs)
   | otherwise       = (vars, vals) : setVar var val fs
 
 evalDef :: ([SObj], Env) -> (SObj, Env)
+evalDef ([SSymbol var, SList ((SSymbol "lambda"):body) _], env) =
+  (SSymbol "ok", defineVar var (makeLambda body env) env)
+evalDef (((SList ((SSymbol var):params) Nil):body), env) =
+  (SSymbol "ok", defineVar var (makeLambda ((SList params Nil):body) env) env)
 evalDef ([SSymbol var, val], env) = (SSymbol "ok", defineVar var val env)
 
 defineVar :: String -> SObj -> Env -> Env

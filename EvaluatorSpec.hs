@@ -45,3 +45,5 @@ main = hspec $ do
       eval' (parse' "(/ 10 2)", initialEnv) `shouldBe` parse' "5"
     it "evaluates compound procedure" $ do
       eval' (parse' "((lambda (x y) (+ x y)) 3 5)", initialEnv) `shouldBe` parse' "8"
+      eval' (parse' "(begin (define plus (lambda (x y) (+ x y))) (plus 3 5))", initialEnv) `shouldBe` parse' "8"
+      eval' (parse' "(begin (define (plus x y) (+ x y)) (plus 2 5))", initialEnv) `shouldBe` parse' "7"
