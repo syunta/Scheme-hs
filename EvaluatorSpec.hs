@@ -36,10 +36,12 @@ main = hspec $ do
       eval' (parse' "(lambda (x . args) 1)", initialEnv) `shouldBe` SLambda ["x"] "args" [SInt 1] initialEnv
     it "evaluates begin syntax" $ do
       eval' (parse' "(begin 1 2 3 4 5)", initialEnv) `shouldBe` parse' "5"
-    it "evaluates primitive application" $ do
+    it "evaluates primitive procedure" $ do
       eval' (parse' "(+ 2 4)", initialEnv) `shouldBe` parse' "6"
       eval' (parse' "(+ 2 4 10)", initialEnv) `shouldBe` parse' "16"
       eval' (parse' "(- 6 4)", initialEnv) `shouldBe` parse' "2"
       eval' (parse' "(- 10 3 2)", initialEnv) `shouldBe` parse' "5"
       eval' (parse' "(* 2 3 5)", initialEnv) `shouldBe` parse' "30"
       eval' (parse' "(/ 10 2)", initialEnv) `shouldBe` parse' "5"
+    it "evaluates compound procedure" $ do
+      eval' (parse' "((lambda (x y) (+ x y)) 3 5)", initialEnv) `shouldBe` parse' "8"

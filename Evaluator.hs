@@ -62,7 +62,7 @@ evalArgs (xs, env) = iter ([], env) xs
 
 apply :: SObj -> [SObj] -> Env -> (SObj, Env)
 apply (Primitive x) args env = ((getProc x primitiveProcedures) args, env)
---apply (SLambda ps "" body env) args = evalSeq (body, env)
+apply (SLambda ps "" body e1) args e2 = (fst . evalSeq $ (body, extendEnv ps args e1), e2)
 
 evalIf :: ([SObj], Env) -> (SObj, Env)
 evalIf ([pred, cnsq], env) =
