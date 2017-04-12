@@ -92,7 +92,9 @@ evalSeq (xs, env) = iter (Nil, env) xs
     iter (_, env) (exp:exps) = iter (eval (exp, env)) exps
 
 evalSet :: ([SObj], Env) -> (SObj, Env)
-evalSet ([SSymbol var, val], env) = (SSymbol "ok", setVar var val env)
+evalSet ([SSymbol var, val], env) =
+  let (val', env') = eval (val, env) in
+  (SSymbol "ok", setVar var val' env')
 
 setVar :: String -> SObj -> Env -> Env
 setVar var val [] = [] -- TODO: Symbol not found error
@@ -105,7 +107,9 @@ evalDef ([SSymbol var, SList ((SSymbol "lambda"):body) _], env) =
   (SSymbol "ok", defineVar var (makeLambda body env) env)
 evalDef (((SList ((SSymbol var):params) Nil):body), env) =
   (SSymbol "ok", defineVar var (makeLambda ((SList params Nil):body) env) env)
-evalDef ([SSymbol var, val], env) = (SSymbol "ok", defineVar var val env)
+evalDef ([SSymbol var, val], env) =
+  let (val', env') = eval (val, env) in
+  (SSymbol "ok", defineVar var val' env')
 
 defineVar :: String -> SObj -> Env -> Env
 defineVar var val (([], _):fs) = ([var], [val]) : fs
