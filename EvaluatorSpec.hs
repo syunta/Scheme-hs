@@ -50,3 +50,6 @@ main = hspec $ do
       eval' (parse' "(begin (define plus (lambda (x y) (+ x y))) (plus 3 5))", initialEnv) `shouldBe` parse' "8"
       eval' (parse' "(begin (define (plus x y) (+ x y)) (plus 2 5))", initialEnv) `shouldBe` parse' "7"
       eval' (parse' "(begin (define (tail x . args) args) (tail 2 5 9))", initialEnv) `shouldBe` parse' "(5 9)"
+      eval'
+        (parse' "(begin (define (fib n) (if (= n 0) 0 (if (= n 1) 1 (+ (fib (- n 1)) (fib (- n 2)))))) (fib 10))", initialEnv)
+        `shouldBe` parse' "55"
