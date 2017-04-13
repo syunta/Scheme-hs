@@ -63,6 +63,8 @@ evalArgs (xs, env) = iter ([], env) xs
 apply :: SObj -> [SObj] -> Env -> (SObj, Env)
 apply (Primitive x) args env = ((getProc x primitiveProcedures) args, env)
 apply (SLambda ps "" body e1) args e2 = (fst . evalSeq $ (body, extendEnv ps args e1), e2)
+apply (SLambda ps p body e1) args e2 =
+  (fst . evalSeq $ (body, extendEnv (ps ++ [p]) ((take (length ps) args) ++ [SList (drop (length ps) args) Nil]) e1), e2)
 
 evalIf :: ([SObj], Env) -> (SObj, Env)
 evalIf ([pred, cnsq], env) =
@@ -107,6 +109,8 @@ evalDef ([SSymbol var, SList ((SSymbol "lambda"):body) _], env) =
   (SSymbol "ok", defineVar var (makeLambda body env) env)
 evalDef (((SList ((SSymbol var):params) Nil):body), env) =
   (SSymbol "ok", defineVar var (makeLambda ((SList params Nil):body) env) env)
+evalDef (((SList ((SSymbol var):params) tail):body), env) =
+  (SSymbol "ok", defineVar var (makeLambda ((SList params tail):body) env) env)
 evalDef ([SSymbol var, val], env) =
   let (val', env') = eval (val, env) in
   (SSymbol "ok", defineVar var val' env')
