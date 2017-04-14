@@ -32,6 +32,10 @@ main = hspec $ do
       eval' (parse' "(if 10 10)", initialEnv) `shouldBe` parse' "10"
       eval' (parse' "(if #f 1 0)", initialEnv) `shouldBe` parse' "0"
       eval' (parse' "(if #t 1 0)", initialEnv) `shouldBe` parse' "1"
+    it "evaluates cond syntax" $ do
+      eval' (parse' "(cond ((= 0 1) 0) (else 1))", initialEnv) `shouldBe` parse' "1"
+      eval' (parse' "(cond ((= 0 1) 0) ((= 1 1) 0 (+ 2 1)) (else 9))", initialEnv) `shouldBe` parse' "3"
+      eval' (parse' "(cond ((= 0 1) 0))", initialEnv) `shouldBe` parse' "#f"
     it "evaluates lambda syntax" $ do
       eval' (parse' "(lambda () 1 2)", initialEnv) `shouldBe` SLambda [] "" [SInt 1, SInt 2] initialEnv
       eval' (parse' "(lambda (x) 1)", initialEnv) `shouldBe` SLambda ["x"] "" [SInt 1] initialEnv

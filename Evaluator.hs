@@ -42,6 +42,8 @@ eval (SList ((SSymbol "set!"):exps) _, env) = evalSet (exps, env)
 eval (SList ((SSymbol "define"):exps) _, env) = evalDef (exps, env)
 -- if
 eval (SList ((SSymbol "if"):exps) _, env) = evalIf (exps, env)
+-- cond
+eval (SList ((SSymbol "cond"):exps) _, env) = eval (cond2if $ SList ((SSymbol "cond"):exps) Nil, env)
 -- lambda
 eval (SList ((SSymbol "lambda"):exps) _, env) = (makeLambda exps env, env)
 -- begin
@@ -77,6 +79,18 @@ evalIf ([pred, cnsq, alt], env) =
     case result of
       (SBool False, env) -> eval (alt, env)
       _                  -> eval (cnsq, env)
+
+cond2if :: SObj -> SObj
+cond2if (SList ((SSymbol "cond"):clauses) _) = expandClause clauses
+
+expandClause :: [SObj] -> SObj
+expandClause [] = SBool False
+expandClause ((SList ((SSymbol "else"):clause) _):_) = seq2begin clause
+expandClause ((SList (pred:cnsq) _):clauses) = SList [SSymbol "if", pred, seq2begin cnsq, expandClause clauses] Nil
+
+seq2begin :: [SObj] -> SObj
+seq2begin []   = Nil
+seq2begin exps = SList ((SSymbol "begin"):exps) Nil
 
 makeLambda :: [SObj] -> Env -> SObj
 makeLambda (Nil:body) = SLambda [] "" body
