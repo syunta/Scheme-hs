@@ -4,7 +4,17 @@ module Env
 ) where
 
 import Types
+import Subr
 import qualified Data.Map as M
+
+initialEnv :: Env
+initialEnv = Node (makeFrame primitiveProcedureNames primitiveProcedureObjects) M.empty
+
+primitiveProcedureNames :: [String]
+primitiveProcedureNames = map (\(n, _ , _) -> n) primitiveProcedures
+
+primitiveProcedureObjects :: [SObj]
+primitiveProcedureObjects = map (\(_, p , _) -> p) primitiveProcedures
 
 makeFrame :: [String] -> [SObj] -> Frame
 makeFrame vars vals = M.fromList $ zip vars vals
