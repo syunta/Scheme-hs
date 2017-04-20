@@ -1,23 +1,27 @@
 module Types
 (
+  Ref,
   SObj(..),
-  Env,
+  Env(..),
   Frame
 ) where
 
 import Data.List
+import qualified Data.Map as M
 
 data SObj = SInt Int |
             SSymbol String |
             SList [SObj] SObj |
             SBool Bool |
-            SLambda [String] String [SObj] Env |
+            SLambda [String] String [SObj] Ref |
             Nil |
             Primitive String
             deriving Eq
 
-type Env = [Frame]
-type Frame = ([String], [SObj])
+data Env = Node Frame (M.Map Int Env) deriving (Show, Eq)
+
+type Frame = M.Map String SObj
+type Ref = [Int]
 
 instance Show SObj where
   show Nil = "nil"
