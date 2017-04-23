@@ -1,9 +1,8 @@
 module Types
 (
-  Ref,
   SObj(..),
   Env(..),
-  Frame
+  Frame, Body, Ref, Params, DotParam
 ) where
 
 import Data.List
@@ -13,7 +12,7 @@ data SObj = SInt Int |
             SSymbol String |
             SList [SObj] SObj |
             SBool Bool |
-            SLambda [String] String [SObj] Ref |
+            SLambda Params DotParam Body Ref |
             Nil |
             Primitive String
             deriving Eq
@@ -22,6 +21,9 @@ data Env = Node Frame (M.Map Int Env) deriving (Show, Eq)
 
 type Frame = M.Map String SObj
 type Ref = [Int]
+type Params = [String]
+type DotParam = String
+type Body = [SObj]
 
 instance Show SObj where
   show Nil = "nil"
