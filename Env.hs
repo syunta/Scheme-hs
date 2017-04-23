@@ -1,6 +1,6 @@
 module Env
 (
-  makeFrame
+  initialEnv, extendEnv, lookupEnv
 ) where
 
 import Types

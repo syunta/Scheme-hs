@@ -1,84 +1,71 @@
 module Evaluator
 (
-  eval, initialEnv
+  evl
 ) where
 
 import Types
 import Parser
 import Subr
+import Env
 
-initialEnv :: Env
-initialEnv = extendEnv primitiveProcedureNames primitiveProcedureObjects []
+evl :: (SObj, Env) -> (SObj, Env)
+evl (exp, env) = (\(v,e,_)-> (v,e)) . eval $ (exp, env, [])
 
-primitiveProcedureNames :: [String]
-primitiveProcedureNames = map (\(n, _ , _) -> n) primitiveProcedures
-
-primitiveProcedureObjects :: [SObj]
-primitiveProcedureObjects = map (\(_, p , _) -> p) primitiveProcedures
-
-extendEnv :: [String] -> [SObj] -> Env -> Env
-extendEnv vars vals e = (vars, vals) : e
-
-lookupEnv :: String -> Env -> SObj
-lookupEnv _ [] = Nil -- TODO: Unbound variable error
-lookupEnv x ((vars, vals):fs) = scanEnv vars vals
-  where
-    scanEnv [] _ = lookupEnv x fs
-    scanEnv (var:vrs) (val:vls)
-      | x == var = val
-      | otherwise = scanEnv vrs vls
-
-eval :: (SObj, Env) -> (SObj, Env)
+eval :: (SObj, Env, Ref) -> (SObj, Env, Ref)
 -- self evaluating
-eval (SInt x, env) = (SInt x, env)
-eval (SBool x, env) = (SBool x, env)
+eval (SInt x, env, r) = (SInt x, env, r)
+eval (SBool x, env, r) = (SBool x, env, r)
 -- variable
-eval (SSymbol x, env) = (lookupEnv x env, env)
+eval (SSymbol x, env, r) = do
+  let val = lookupEnv x env r
+  case val of
+    Nothing -> (Nil, env, r)
+    Just v  -> (v, env, r)
 -- quotation
-eval (SList [SSymbol "quote", exp] _, env) = (exp, env)
+eval (SList [SSymbol "quote", exp] _, env, r) = (exp, env, r)
 -- assignment
-eval (SList ((SSymbol "set!"):exps) _, env) = evalSet (exps, env)
+-- eval (SList ((SSymbol "set!"):exps) _, env) = evalSet (exps, env)
 -- definition
-eval (SList ((SSymbol "define"):exps) _, env) = evalDef (exps, env)
+-- eval (SList ((SSymbol "define"):exps) _, env) = evalDef (exps, env)
 -- if
-eval (SList ((SSymbol "if"):exps) _, env) = evalIf (exps, env)
+eval (SList ((SSymbol "if"):exps) _, env, r) = evalIf (exps, env, r)
 -- cond
-eval (SList ((SSymbol "cond"):exps) _, env) = eval (cond2if $ SList ((SSymbol "cond"):exps) Nil, env)
+eval (SList ((SSymbol "cond"):exps) _, env, r) = eval (cond2if $ SList ((SSymbol "cond"):exps) Nil, env, r)
 -- lambda
-eval (SList ((SSymbol "lambda"):exps) _, env) = (makeLambda exps env, env)
+--eval (SList ((SSymbol "lambda"):exps) _, env) = (makeLambda exps env, env)
 -- begin
-eval (SList ((SSymbol "begin"):exps) _, env) = evalSeq (exps, env)
+eval (SList ((SSymbol "begin"):exps) _, env, r) = evalSeq (exps, env, r)
 -- application
-eval (SList (op:args) _, env) =
-  let (op', env')    = eval (op, env)
-      (args', env'') = evalArgs (args, env') in
-  apply op' args' env''
+eval (SList (op:args) _, env, r) =
+  let (op', env', _)    = eval (op, env, r)
+      (args', env'', _) = evalArgs (args, env', r) in
+  apply op' args' env'' r
 
-evalArgs :: ([SObj], Env) -> ([SObj], Env)
-evalArgs (xs, env) = iter ([], env) xs
+evalArgs :: ([SObj], Env, Ref) -> ([SObj], Env, Ref)
+evalArgs (xs, env, r) = iter ([], env) xs
   where
-    iter (ys, env) []         = (reverse ys, env)
+    iter (ys, env) []         = (reverse ys, env, r)
     iter (ys, env) (exp:exps) =
-      let (exp', env') = eval (exp, env) in
+      let (exp', env', _) = eval (exp, env, r) in
       iter ((exp':ys), env') exps
 
-apply :: SObj -> [SObj] -> Env -> (SObj, Env)
-apply (Primitive x) args env = ((getProc x primitiveProcedures) args, env)
-apply (SLambda ps "" body _) args e2 = (fst . evalSeq $ (body, extendEnv ps args e2), e2) -- TODO: Replace Env
-apply (SLambda ps p body e1) args e2 =
-  (fst . evalSeq $ (body, extendEnv (ps ++ [p]) ((take (length ps) args) ++ [SList (drop (length ps) args) Nil]) e1), e2)
+apply :: SObj -> [SObj] -> Env -> Ref -> (SObj, Env, Ref)
+apply (Primitive x) args env r = ((getProc x primitiveProcedures) args, env, r)
+--apply (SLambda ps "" body _) args e2 = (fst . evalSeq $ (body, extendEnv ps args e2), e2) -- TODO: Replace Env
+--apply (SLambda ps p body e1) args e2 =
+--  (fst . evalSeq $ (body, extendEnv (ps ++ [p]) ((take (length ps) args) ++ [SList (drop (length ps) args) Nil]) e1), e2)
 
-evalIf :: ([SObj], Env) -> (SObj, Env)
-evalIf ([pred, cnsq], env) =
-  let result = eval (pred, env) in
+evalIf :: ([SObj], Env, Ref) -> (SObj, Env, Ref)
+evalIf ([pred, cnsq], env, r) =
+  let result = eval (pred, env, r) in
     case result of
-      (SBool False, env) -> ((SBool False), env)
-      _                    -> eval (cnsq, env)
-evalIf ([pred, cnsq, alt], env) =
-  let result = eval (pred, env) in
+      (SBool False, env, r) -> ((SBool False), env, r)
+      _                     -> eval (cnsq, env, r)
+evalIf ([pred, cnsq, alt], env, r) =
+  let result = eval (pred, env, r) in
     case result of
-      (SBool False, env) -> eval (alt, env)
-      _                  -> eval (cnsq, env)
+      (SBool False, env, r) -> eval (alt, env, r)
+      _                     -> eval (cnsq, env, r)
 
 cond2if :: SObj -> SObj
 cond2if (SList ((SSymbol "cond"):clauses) _) = expandClause clauses
@@ -92,52 +79,52 @@ seq2begin :: [SObj] -> SObj
 seq2begin []   = Nil
 seq2begin exps = SList ((SSymbol "begin"):exps) Nil
 
-makeLambda :: [SObj] -> Env -> SObj
-makeLambda (Nil:body) = SLambda [] "" body
-makeLambda ((SList exps Nil):body) = SLambda (makeParams exps) "" body
-makeLambda ((SList exps (SSymbol tail)):body) = SLambda (makeParams exps) tail body
+--makeLambda :: [SObj] -> Env -> SObj
+--makeLambda (Nil:body) = SLambda [] "" body
+--makeLambda ((SList exps Nil):body) = SLambda (makeParams exps) "" body
+--makeLambda ((SList exps (SSymbol tail)):body) = SLambda (makeParams exps) tail body
 
-makeParams :: [SObj] -> [String]
-makeParams [] = []
-makeParams ((SSymbol x):xs) = x : makeParams xs
+--makeParams :: [SObj] -> [String]
+--makeParams [] = []
+--makeParams ((SSymbol x):xs) = x : makeParams xs
 
-evalSeq :: ([SObj], Env) -> (SObj, Env)
-evalSeq (xs, env) = iter (Nil, env) xs
+evalSeq :: ([SObj], Env, Ref) -> (SObj, Env, Ref)
+evalSeq (xs, env, r) = iter (Nil, env, r) xs
   where
     iter x        []         = x
-    iter (_, env) (exp:exps) = iter (eval (exp, env)) exps
+    iter (_, env, r) (exp:exps) = iter (eval (exp, env, r)) exps
 
-evalSet :: ([SObj], Env) -> (SObj, Env)
-evalSet ([SSymbol var, val], env) =
-  let (val', env') = eval (val, env) in
-  (SSymbol "ok", setVar var val' env')
+--evalSet :: ([SObj], Env) -> (SObj, Env)
+--evalSet ([SSymbol var, val], env) =
+--  let (val', env') = eval (val, env) in
+--  (SSymbol "ok", setVar var val' env')
 
-setVar :: String -> SObj -> Env -> Env
-setVar var val [] = [] -- TODO: Symbol not found error
-setVar var val ((vars, vals):fs)
-  | var `elem` vars = (replaceVal var val (vars, vals)) : fs
-  | otherwise       = (vars, vals) : setVar var val fs
+--setVar :: String -> SObj -> Env -> Env
+--setVar var val [] = [] -- TODO: Symbol not found error
+--setVar var val ((vars, vals):fs)
+--  | var `elem` vars = (replaceVal var val (vars, vals)) : fs
+--  | otherwise       = (vars, vals) : setVar var val fs
 
-evalDef :: ([SObj], Env) -> (SObj, Env)
-evalDef ([SSymbol var, SList ((SSymbol "lambda"):body) _], env) =
-  (SSymbol "ok", defineVar var (makeLambda body env) env)
-evalDef (((SList ((SSymbol var):params) Nil):body), env) =
-  (SSymbol "ok", defineVar var (makeLambda ((SList params Nil):body) env) env)
-evalDef (((SList ((SSymbol var):params) tail):body), env) =
-  (SSymbol "ok", defineVar var (makeLambda ((SList params tail):body) env) env)
-evalDef ([SSymbol var, val], env) =
-  let (val', env') = eval (val, env) in
-  (SSymbol "ok", defineVar var val' env')
+--evalDef :: ([SObj], Env) -> (SObj, Env)
+--evalDef ([SSymbol var, SList ((SSymbol "lambda"):body) _], env) =
+--  (SSymbol "ok", defineVar var (makeLambda body env) env)
+--evalDef (((SList ((SSymbol var):params) Nil):body), env) =
+--  (SSymbol "ok", defineVar var (makeLambda ((SList params Nil):body) env) env)
+--evalDef (((SList ((SSymbol var):params) tail):body), env) =
+--  (SSymbol "ok", defineVar var (makeLambda ((SList params tail):body) env) env)
+--evalDef ([SSymbol var, val], env) =
+--  let (val', env') = eval (val, env) in
+--  (SSymbol "ok", defineVar var val' env')
 
-defineVar :: String -> SObj -> Env -> Env
-defineVar var val (([], _):fs) = ([var], [val]) : fs
-defineVar var val (f:fs) = (replaceVal var val f) : fs
+--defineVar :: String -> SObj -> Env -> Env
+--defineVar var val (([], _):fs) = ([var], [val]) : fs
+--defineVar var val (f:fs) = (replaceVal var val f) : fs
 
-replaceVal :: String -> SObj -> Frame -> Frame
-replaceVal var val (vars, vals) = makeFrame var val vars vals [] []
+--replaceVal :: String -> SObj -> Frame -> Frame
+--replaceVal var val (vars, vals) = makeFrame var val vars vals [] []
 
-makeFrame :: String -> SObj -> [String] -> [SObj] -> [String] -> [SObj] -> Frame
-makeFrame var val [] _ vars vals = (var:vars, val:vals)
-makeFrame var val (x:xs) (y:ys) vars vals
-  | x == var  = (var:xs ++ vars, val:ys ++ vals)
-  | otherwise = makeFrame var val xs ys (x:vars) (y:vals)
+--makeFrame :: String -> SObj -> [String] -> [SObj] -> [String] -> [SObj] -> Frame
+--makeFrame var val [] _ vars vals = (var:vars, val:vals)
+--makeFrame var val (x:xs) (y:ys) vars vals
+--  | x == var  = (var:xs ++ vars, val:ys ++ vals)
+--  | otherwise = makeFrame var val xs ys (x:vars) (y:vals)
