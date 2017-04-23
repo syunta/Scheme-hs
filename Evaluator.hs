@@ -32,7 +32,7 @@ eval (SList ((SSymbol "if"):exps) _, env, r) = evalIf (exps, env, r)
 -- cond
 eval (SList ((SSymbol "cond"):exps) _, env, r) = eval (cond2if $ SList ((SSymbol "cond"):exps) Nil, env, r)
 -- lambda
---eval (SList ((SSymbol "lambda"):exps) _, env) = (makeLambda exps env, env)
+eval (SList ((SSymbol "lambda"):exps) _, env, r) = (makeLambda exps r, env, r)
 -- begin
 eval (SList ((SSymbol "begin"):exps) _, env, r) = evalSeq (exps, env, r)
 -- application
@@ -79,14 +79,14 @@ seq2begin :: [SObj] -> SObj
 seq2begin []   = Nil
 seq2begin exps = SList ((SSymbol "begin"):exps) Nil
 
---makeLambda :: [SObj] -> Env -> SObj
---makeLambda (Nil:body) = SLambda [] "" body
---makeLambda ((SList exps Nil):body) = SLambda (makeParams exps) "" body
---makeLambda ((SList exps (SSymbol tail)):body) = SLambda (makeParams exps) tail body
+makeLambda :: Body -> Ref -> SObj
+makeLambda (Nil:body) = SLambda [] "" body
+makeLambda ((SList exps Nil):body) = SLambda (makeParams exps) "" body
+makeLambda ((SList exps (SSymbol tail)):body) = SLambda (makeParams exps) tail body
 
---makeParams :: [SObj] -> [String]
---makeParams [] = []
---makeParams ((SSymbol x):xs) = x : makeParams xs
+makeParams :: [SObj] -> [String]
+makeParams [] = []
+makeParams ((SSymbol x):xs) = x : makeParams xs
 
 evalSeq :: ([SObj], Env, Ref) -> (SObj, Env, Ref)
 evalSeq (xs, env, r) = iter (Nil, env, r) xs
