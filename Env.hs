@@ -20,8 +20,7 @@ makeFrame :: [String] -> [SObj] -> Frame
 makeFrame vars vals = M.fromList $ zip vars vals
 
 extendEnv :: [String] -> [SObj] -> Env -> Env
-extendEnv vars vals (Node f e) = Node f $ M.insert num (Node (makeFrame vars vals) M.empty) e
-  where num = (1+) $ length . M.keys $ e
+extendEnv vars vals (Node f e) = Node f $ M.insert (keyPos e) (Node (makeFrame vars vals) M.empty) e
 
 lookupEnv :: String -> Env -> Ref -> Maybe SObj
 lookupEnv var (Node f e) [] = M.lookup var f
@@ -63,4 +62,7 @@ extendRef e rs = do
   let m = scanEnv' (Just e) rs
   case m of
     Nothing -> rs
-    (Just m) -> ((1+) $ length . M.keys $ m) : rs
+    (Just m) -> (keyPos m) : rs
+
+keyPos :: M.Map k a -> Int
+keyPos = (1+) . length . M.keys
