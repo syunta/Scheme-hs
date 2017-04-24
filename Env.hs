@@ -1,6 +1,6 @@
 module Env
 (
-  initialEnv, extendEnv, lookupEnv, defineVar
+  initialEnv, extendEnv, lookupEnv, defineVar, extendRef
 ) where
 
 import Types
@@ -36,6 +36,10 @@ scanEnv :: Maybe Env -> Ref -> Maybe Frame
 scanEnv (Just (Node f _)) []     = (Just f)
 scanEnv (Just (Node _ e)) (r:rs) = scanEnv (M.lookup r e) rs
 
+scanEnv' :: Maybe Env -> Ref -> Maybe (M.Map Int Env)
+scanEnv' (Just (Node _ e)) []     = (Just e)
+scanEnv' (Just (Node _ e)) (r:rs) = scanEnv' (M.lookup r e) rs
+
 defineVar :: String -> SObj -> Env -> Ref -> Env
 defineVar var val e r = do
   let f = scanEnv (Just e) r
@@ -53,3 +57,10 @@ replace f (Node f' e) (r:rs) =
     (Just e') ->
       let newe = replace f e' rs in
       Node f' (M.insert r newe e)
+
+extendRef :: Env -> Ref -> Ref
+extendRef e rs = do
+  let m = scanEnv' (Just e) rs
+  case m of
+    Nothing -> rs
+    (Just m) -> ((1+) $ length . M.keys $ m) : rs
