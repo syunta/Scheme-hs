@@ -4,7 +4,6 @@ module Evaluator
 ) where
 
 import Types
-import Parser
 import Subr
 import Env
 
