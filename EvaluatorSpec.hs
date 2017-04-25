@@ -22,7 +22,7 @@ main = hspec $ do
     it "evaluates set! syntax" $ do
       eval' (parse' "(begin (define x 1) (set! x 2) x)", initialEnv) `shouldBe` parse' "2"
       eval' (parse' "(begin (define x 1) (set! x (+ x 1)) x)", initialEnv) `shouldBe` parse' "2"
---      -- TODO : more spec
+      eval' (parse' "(begin (define c 0) (define (plus!) (set! c (+ c 1)) +) (define (one!) (set! c (+ c 1)) 1) ((plus!) (one!) (one!)) c)", initialEnv) `shouldBe` parse' "3"
     it "evaluates define syntax" $ do
       eval' (parse' "(begin (define hoge 20) hoge)", initialEnv) `shouldBe` parse' "20"
       eval' (parse' "(begin (define hoge 20) (define hoge 10) hoge)", initialEnv) `shouldBe` parse' "10"

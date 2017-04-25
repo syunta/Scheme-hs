@@ -51,10 +51,14 @@ evalArgs (xs, env, r) = iter ([], env) xs
 
 apply :: SObj -> [SObj] -> Env -> Ref -> (SObj, Env, Ref)
 apply (Primitive x) args env r = ((getProc x primitiveProcedures) args, env, r)
-apply (SLambda ps "" body lr) args e r = ((\(x,_,_) -> x) . evalSeq $ (body, ee, er), e, r) -- TODO: Set!
+apply (SLambda ps "" body lr) args e r =
+  let (v, e', _) = evalSeq $ (body, ee, er) in
+  (v, e', r)
   where ee = extendEnv ps args e
         er = extendRef e lr
-apply (SLambda ps p body lr) args e r = ((\(x,_,_) -> x) . evalSeq $ (body, ee, er), e, r)
+apply (SLambda ps p body lr) args e r =
+  let (v, e', _) = evalSeq $ (body, ee, er) in
+  (v, e', r)
   where ee = extendEnv (ps ++ [p]) ((take (length ps) args) ++ [SList (drop (length ps) args) Nil]) e
         er = extendRef e lr
 
