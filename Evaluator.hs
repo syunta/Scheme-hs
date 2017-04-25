@@ -24,7 +24,7 @@ eval (SSymbol x, env, r) = do
 -- quotation
 eval (SList [SSymbol "quote", exp] _, env, r) = (exp, env, r)
 -- assignment
--- eval (SList ((SSymbol "set!"):exps) _, env, r) = evalSet (exps, env, r)
+eval (SList ((SSymbol "set!"):exps) _, env, r) = evalSet (exps, env, r)
 -- definition
 eval (SList ((SSymbol "define"):exps) _, env, r) = evalDef (exps, env, r)
 -- if
@@ -97,10 +97,10 @@ evalSeq (xs, env, r) = iter (Nil, env, r) xs
     iter x        []         = x
     iter (_, env, r) (exp:exps) = iter (eval (exp, env, r)) exps
 
---evalSet :: ([SObj], Env, Ref) -> (SObj, Env, Ref)
---evalSet ([SSymbol var, val], env, r) =
---  let (val', env', _) = eval (val, env, r) in
---  (SSymbol "ok", setVar var val' env' r, r)
+evalSet :: ([SObj], Env, Ref) -> (SObj, Env, Ref)
+evalSet ([SSymbol var, val], env, r) =
+  let (val', env', _) = eval (val, env, r) in
+  (SSymbol "ok", setVar var val' env' r, r)
 
 evalDef :: ([SObj], Env, Ref) -> (SObj, Env, Ref)
 evalDef ([SSymbol var, SList ((SSymbol "lambda"):body) _], env, r) =

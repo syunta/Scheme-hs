@@ -19,9 +19,9 @@ main = hspec $ do
       eval' (parse' "'10", initialEnv) `shouldBe` parse' "10"
       eval' (parse' "'(1 2 3)", initialEnv) `shouldBe` parse' "(1 2 3)"
       eval' (parse' "'hoge", initialEnv) `shouldBe` parse' "hoge"
---    it "evaluates set! syntax" $ do
---      eval' (parse' "(begin (define x 1) (set! x 2) x)", initialEnv) `shouldBe` parse' "2"
---      eval' (parse' "(begin (define x 1) (set! x (+ x 1)) x)", initialEnv) `shouldBe` parse' "2"
+    it "evaluates set! syntax" $ do
+      eval' (parse' "(begin (define x 1) (set! x 2) x)", initialEnv) `shouldBe` parse' "2"
+      eval' (parse' "(begin (define x 1) (set! x (+ x 1)) x)", initialEnv) `shouldBe` parse' "2"
 --      -- TODO : more spec
     it "evaluates define syntax" $ do
       eval' (parse' "(begin (define hoge 20) hoge)", initialEnv) `shouldBe` parse' "20"
