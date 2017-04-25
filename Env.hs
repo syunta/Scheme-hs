@@ -1,6 +1,6 @@
 module Env
 (
-  initialEnv, extendEnv, lookupEnv, defineVar, extendRef
+  initialEnv, extendEnv, lookupEnv, defineVar, setVar, extendRef
 ) where
 
 import Types
@@ -44,8 +44,26 @@ defineVar var val e r = do
   let f = scanEnv (Just e) r
   case f of
     Nothing -> e
-    (Just f) -> let newf = M.insert var val f in
+    Just f  -> let newf = M.insert var val f in
                 replace newf e r
+
+setVar :: String -> SObj -> Env -> Ref -> Env
+setVar var val (Node f e) [] =
+  let bind = M.lookup var f in
+  case bind of
+    Nothing -> (Node f e)
+    Just _  -> let newf = M.insert var val f in
+                (Node newf e)
+setVar var val e r = do
+  let f = scanEnv (Just e) r
+  case f of
+    Nothing -> e
+    (Just f) ->
+      let bind = M.lookup var f in
+      case bind of
+        Nothing -> setVar var val e (tail r)
+        Just _  -> let newf = M.insert var val f in
+                    replace newf e r
 
 replace :: Frame -> Env -> Ref -> Env
 replace f (Node _ e) [] = Node f e
@@ -53,7 +71,7 @@ replace f (Node f' e) (r:rs) =
   let e' = M.lookup r e in
   case e' of
     Nothing -> Node f' e
-    (Just e') ->
+    Just e' ->
       let newe = replace f e' rs in
       Node f' (M.insert r newe e)
 
@@ -62,7 +80,7 @@ extendRef e rs = do
   let m = scanEnv' (Just e) rs
   case m of
     Nothing -> rs
-    (Just m) -> (keyPos m) : rs
+    Just m  -> (keyPos m) : rs
 
 keyPos :: M.Map k a -> Int
 keyPos = (1+) . length . M.keys
