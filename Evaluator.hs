@@ -49,7 +49,7 @@ evalArgs (xs, env, r) = iter ([], env) xs
       iter ((exp':ys), env') exps
 
 apply :: SObj -> [SObj] -> Env -> Ref -> (SObj, Env)
-apply (Primitive x) args env r = ((getProc x primitiveProcedures) args, env)
+apply (Primitive x) args env r = (getProc x primitiveProcedures $ args, env)
 apply (SLambda ps "" body lr) args e r =
   let (v, e') = evalSeq $ (body, ee, er) in
     (v, e')
@@ -65,7 +65,7 @@ evalIf :: ([SObj], Env, Ref) -> (SObj, Env)
 evalIf ([pred, cnsq], env, r) =
   let result = eval (pred, env, r) in
     case result of
-      (SBool False, env) -> ((SBool False), env)
+      (SBool False, env) -> (SBool False, env)
       _                  -> eval (cnsq, env, r)
 evalIf ([pred, cnsq, alt], env, r) =
   let result = eval (pred, env, r) in

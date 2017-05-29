@@ -46,8 +46,8 @@ deleteHead (x:xs) = do
 
 evalRestPrint :: ([String], Env) -> IO Env
 evalRestPrint (x, env) = do
-  let (expr, rest) = parseTokens x
-      (val, newEnv)   = evl (expr, env)
+  let (expr, rest)  = parseTokens x
+      (val, newEnv) = evl (expr, env)
   putStrLn (show val)
   case rest of
     [] -> return newEnv
