@@ -21,7 +21,28 @@ run env = do
 readPrompt :: IO String
 readPrompt = do
   putStr "scheme>"
-  getLine
+  readLine
+
+readLine :: IO String
+readLine = readLine' ""
+
+readLine' :: String -> IO String
+readLine' xs = do
+  x <- getChar
+  case x of
+    '\n'   -> return (reverse xs)
+    '\DEL' -> do
+       xs' <- deleteHead xs
+       readLine' xs'
+    _      -> do readLine' (x:xs)
+
+deleteHead :: String -> IO String
+deleteHead [] = do
+  putStr "\ESC[1D\ESC[1D  \ESC[1D\ESC[1D"
+  return []
+deleteHead (x:xs) = do
+  putStr "\ESC[1D\ESC[1D\ESC[1D   \ESC[1D\ESC[1D\ESC[1D"
+  return xs
 
 evalRestPrint :: ([String], Env) -> IO Env
 evalRestPrint (x, env) = do
