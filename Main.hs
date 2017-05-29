@@ -1,6 +1,7 @@
 import Parser
 import Evaluator
 import Types
+import Env
 
 run :: Env -> IO ()
 run env = do
@@ -9,8 +10,8 @@ run env = do
     "exit" -> return ()
     ""     -> run env
     _      -> do
-      let (expr, rest) = parse x
-          (val, newEnv)   = eval (expr, env)
+      let (expr, rest)  = parse x
+          (val, newEnv) = evl (expr, env)
       putStrLn (show val)
       case rest of
         [] -> run newEnv
@@ -25,7 +26,7 @@ readPrompt = do
 evalRestPrint :: ([String], Env) -> IO Env
 evalRestPrint (x, env) = do
   let (expr, rest) = parseTokens x
-      (val, newEnv)   = eval (expr, env)
+      (val, newEnv)   = evl (expr, env)
   putStrLn (show val)
   case rest of
     [] -> return newEnv
