@@ -32,11 +32,11 @@ lookupEnv var e (r:rs) = do
     _       -> val
 
 scanEnv :: Maybe Env -> Ref -> Maybe Frame
-scanEnv (Just (Node f _)) []     = (Just f)
+scanEnv (Just (Node f _)) []     = Just f
 scanEnv (Just (Node _ e)) (r:rs) = scanEnv (M.lookup r e) rs
 
 scanEnv' :: Maybe Env -> Ref -> Maybe (M.Map Int Env)
-scanEnv' (Just (Node _ e)) []     = (Just e)
+scanEnv' (Just (Node _ e)) []     = Just e
 scanEnv' (Just (Node _ e)) (r:rs) = scanEnv' (M.lookup r e) rs
 
 defineVar :: String -> SObj -> Env -> Ref -> Env
@@ -51,9 +51,9 @@ setVar :: String -> SObj -> Env -> Ref -> Env
 setVar var val (Node f e) [] =
   let bind = M.lookup var f in
   case bind of
-    Nothing -> (Node f e)
+    Nothing -> Node f e
     Just _  -> let newf = M.insert var val f in
-                (Node newf e)
+                 Node newf e
 setVar var val e r = do
   let f = scanEnv (Just e) r
   case f of
@@ -80,7 +80,7 @@ extendRef e rs = do
   let m = scanEnv' (Just e) rs
   case m of
     Nothing -> rs
-    Just m  -> (keyPos m) : rs
+    Just m  -> keyPos m : rs
 
 keyPos :: M.Map k a -> Int
 keyPos = (1+) . length . M.keys

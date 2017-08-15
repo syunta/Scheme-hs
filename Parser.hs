@@ -7,16 +7,16 @@ import Types
 import Text.Read
 
 tokenize :: String -> [String]
-tokenize = concat . (map separate) . words
+tokenize = concatMap separate . words
 
 separate :: String -> [String]
 separate ts =
-  t $ span (not . (`elem` ".()'")) ts
+  t $ break (`elem` ".()'") ts
     where
       t ("", "") = []
       t (xs, "") = [xs]
-      t ("", ('(':')':ys)) = ["()"] ++ separate ys
-      t ("", ys) = [[head ys]] ++ separate (tail ys)
+      t ("", '(' : ')' : ys) = "()" : separate ys
+      t ("", ys) = [head ys] : separate (tail ys)
       t (xs, ys) = [xs, [head ys]] ++ separate (tail ys)
 
 parse :: String -> (SObj, [String])
@@ -55,9 +55,9 @@ parseDotList (SList ls _, t:")":ts) = (SList ls (parseAtom t), ts)
 
 parseAtom :: String -> SObj
 parseAtom token
-  | not . (Nothing ==) $ mval = let (Just val) = mval in (SInt val)
+  | (Nothing /=) mval = let (Just val) = mval in SInt val
   | token == "#t" = SBool True
   | token == "#f" = SBool False
   | token == "()" = Nil
   | otherwise = SSymbol token
-    where mval = (readMaybe token :: Maybe Int)
+    where mval = readMaybe token :: Maybe Int

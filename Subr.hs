@@ -18,16 +18,16 @@ getProc key ((x, _, f):xs)
   | otherwise = getProc key xs
 
 primPlus :: [SObj] -> SObj
-primPlus args = foldl1 (calc (+)) args
+primPlus = foldl1 (calc (+))
 
 primMinus :: [SObj] -> SObj
-primMinus args = foldl1 (calc (-)) args
+primMinus = foldl1 (calc (-))
 
 primSub :: [SObj] -> SObj
-primSub args = foldl1 (calc (*)) args
+primSub = foldl1 (calc (*))
 
 primDiv :: [SObj] -> SObj
-primDiv args = foldl1 (calc div) args
+primDiv = foldl1 (calc div)
 
 calc :: (Int -> Int -> Int) -> (SObj -> SObj -> SObj)
 calc f = fn
