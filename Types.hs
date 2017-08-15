@@ -33,9 +33,9 @@ instance Show SObj where
   show (SBool False) = "#f"
   show (SLambda ps p _ _) = "<closure " ++ show (ps ++ [p]) ++ ">"
   show (Primitive x) = "<subr " ++ x ++ " >"
-  show (SList ((SSymbol "quote"):xs) Nil) = showElements xs
-  show (SList xs Nil) = "(" ++ (showElements xs) ++ ")"
-  show (SList xs obj) = "(" ++ (showElements xs) ++ " . " ++ show obj ++ ")"
+  show (SList (SSymbol "quote" : xs) Nil) = showElements xs
+  show (SList xs Nil) = "(" ++ showElements xs ++ ")"
+  show (SList xs obj) = "(" ++ showElements xs ++ " . " ++ show obj ++ ")"
 
 showElements :: [SObj] -> String
-showElements = (intercalate " ") . (map show)
+showElements = unwords . map show
