@@ -12,7 +12,7 @@ run env = do
     _      -> do
       let (expr, rest)  = parse x
           (val, newEnv) = evl (expr, env)
-      putStrLn (show val)
+      print val
       case rest of
         [] -> run newEnv
         _  -> do newEnv' <- evalRestPrint (rest, newEnv)
@@ -34,7 +34,7 @@ readLine' xs = do
     '\DEL' -> do
        xs' <- deleteHead xs
        readLine' xs'
-    _      -> do readLine' (x:xs)
+    _      -> readLine' (x:xs)
 
 deleteHead :: String -> IO String
 deleteHead [] = do
@@ -48,7 +48,7 @@ evalRestPrint :: ([String], Env) -> IO Env
 evalRestPrint (x, env) = do
   let (expr, rest)  = parseTokens x
       (val, newEnv) = evl (expr, env)
-  putStrLn (show val)
+  print val
   case rest of
     [] -> return newEnv
     _  -> evalRestPrint (rest, newEnv)
