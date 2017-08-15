@@ -5,7 +5,6 @@ module Types
   Frame, Body, Ref, Params, DotParam
 ) where
 
-import Data.List
 import qualified Data.Map as M
 
 data SObj = SInt Int |
