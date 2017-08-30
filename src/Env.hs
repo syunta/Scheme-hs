@@ -25,23 +25,23 @@ extendEnv vars vals (Node f e) = Node f $ M.insert (keyPos e) (Node (makeFrame v
 lookupEnv :: String -> Env -> Ref -> Maybe SObj
 lookupEnv var (Node f _) [] = M.lookup var f
 lookupEnv var e (r:rs) = do
-  f <- scanEnv (Just e) (r:rs)
+  f <- scanEnv e (r:rs)
   let val = M.lookup var f
   case val of
     Nothing -> lookupEnv var e rs
     _       -> val
 
-scanEnv :: Maybe Env -> Ref -> Maybe Frame
-scanEnv (Just (Node f _)) []     = Just f
-scanEnv (Just (Node _ e)) (r:rs) = scanEnv (M.lookup r e) rs
+scanEnv :: Env -> Ref -> Maybe Frame
+scanEnv (Node f _) []     = Just f
+scanEnv (Node _ e) (r:rs) = M.lookup r e >>= flip scanEnv rs
 
-scanEnv' :: Maybe Env -> Ref -> Maybe (M.Map Int Env)
-scanEnv' (Just (Node _ e)) []     = Just e
-scanEnv' (Just (Node _ e)) (r:rs) = scanEnv' (M.lookup r e) rs
+bottomEnv :: Env -> Ref -> Maybe (M.Map Int Env)
+bottomEnv (Node _ e) []     = Just e
+bottomEnv (Node _ e) (r:rs) = M.lookup r e >>= flip bottomEnv rs
 
 defineVar :: String -> SObj -> Env -> Ref -> Env
 defineVar var val e r = do
-  let ret = scanEnv (Just e) r
+  let ret = scanEnv e r
   case ret of
     Nothing -> e
     Just f  -> let newf = M.insert var val f in
@@ -55,7 +55,7 @@ setVar var val (Node f e) [] =
     Just _  -> let newf = M.insert var val f in
                  Node newf e
 setVar var val e r = do
-  let ret = scanEnv (Just e) r
+  let ret = scanEnv e r
   case ret of
     Nothing -> e
     Just f ->
@@ -77,7 +77,7 @@ replace f (Node f' e) (r:rs) =
 
 extendRef :: Env -> Ref -> Ref
 extendRef e rs = do
-  let m = scanEnv' (Just e) rs
+  let m = bottomEnv e rs
   case m of
     Nothing -> rs
     Just m'  -> keyPos m' : rs

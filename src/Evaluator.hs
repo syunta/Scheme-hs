@@ -33,7 +33,7 @@ eval (SList (SSymbol "cond" : exps) _, env, r) = eval (cond2if $ SList (SSymbol 
 -- lambda
 eval (SList (SSymbol "lambda" : exps) _, env, r) = (makeLambda exps r, env)
 -- begin
-eval (SList (SSymbol "begin" : exps) _, env, r) = evalSeq (exps, env, r)
+eval (SList (SSymbol "begin" : exps) _, env, r) = evalSeq exps env r
 -- application
 eval (SList (op:args) _, env, r) =
   let (op', env')    = eval (op, env, r)
@@ -51,12 +51,12 @@ evalArgs (xs, env, r) = iter ([], env) xs
 apply :: SObj -> [SObj] -> Env -> Ref -> (SObj, Env)
 apply (Primitive x) args env r = (getProc x primitiveProcedures args, env)
 apply (SLambda ps "" body lr) args e r =
-  let (v, e') = evalSeq (body, ee, er) in
+  let (v, e') = evalSeq body ee er in
     (v, e')
     where ee = extendEnv ps args e
           er = extendRef e lr
 apply (SLambda ps p body lr) args e r =
-  let (v, e') = evalSeq (body, ee, er) in
+  let (v, e') = evalSeq body ee er in
     (v, e')
     where ee = extendEnv (ps ++ [p]) (take (length ps) args ++ [SList (drop (length ps) args) Nil]) e
           er = extendRef e lr
@@ -94,8 +94,9 @@ makeParams :: [SObj] -> [String]
 makeParams [] = []
 makeParams (SSymbol x : xs) = x : makeParams xs
 
-evalSeq :: ([SObj], Env, Ref) -> (SObj, Env)
-evalSeq (xs, env, r) = iter (Nil, env) xs
+evalSeq :: [SObj] -> Env -> Ref -> (SObj, Env)
+evalSeq xs env r = iter (Nil, env) xs
+  -- iter :: (SObj, Env) -> [SObj] -> (SObj, Env)
   where
     iter x        []         = x
     iter (_, env) (exp:exps) = iter (eval (exp, env, r)) exps
