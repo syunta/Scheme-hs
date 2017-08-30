@@ -1,3 +1,5 @@
+module EvaluatorSpec (spec) where
+
 import Test.Hspec
 import Evaluator
 import Parser
@@ -10,8 +12,8 @@ parse' = fst . parse
 eval' :: (SObj, Env) -> SObj
 eval' = fst . evl
 
-main :: IO ()
-main = hspec $ do
+spec :: Spec
+spec = do
   describe "eval" $ do
     it "evaluates self-evaluating-value" $ do
       eval' (parse' "10", initialEnv) `shouldBe` parse' "10"

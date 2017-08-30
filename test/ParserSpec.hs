@@ -1,9 +1,11 @@
+module ParserSpec (spec) where
+
 import Test.Hspec
 import Parser
 import Types
 
-main :: IO ()
-main = hspec $ do
+spec :: Spec
+spec = do
   describe "parse" $ do
     it "parses list to sobj" $ do
       parse "(1)" `shouldBe` (SList [SInt 1] Nil, [])
