@@ -43,7 +43,7 @@ eval (SList (op:args) _) r = do
   apply op' args' r
 
 evalArgs :: [SObj] -> Ref -> State Env [SObj]
-evalArgs xs r = mapM (flip eval $ r) xs
+evalArgs exps r = mapM (flip eval $ r) exps
 
 apply :: SObj -> [SObj] -> Ref -> State Env SObj
 apply (Primitive x) args r = do
@@ -59,11 +59,11 @@ apply (SLambda params "" body lr) args r = do
   return val
 apply (SLambda params p body lr) args r = do
   env <- get
-  let n = length params in do
-    put $ extendEnv (params ++ [p]) (take n args ++ [SList (drop n args) Nil]) env
-    env' <- get
-    val <- evalSeq body (extendRef env lr)
-    return val
+  let n = length params
+  put $ extendEnv (params ++ [p]) (take n args ++ [SList (drop n args) Nil]) env
+  env' <- get
+  val <- evalSeq body (extendRef env lr)
+  return val
 
 evalIf :: [SObj] -> Ref -> State Env SObj
 evalIf [pred, cnsq] r = do
@@ -95,8 +95,7 @@ makeLambda (SList exps Nil : body) = SLambda (makeParams exps) "" body
 makeLambda (SList exps (SSymbol tail) : body) = SLambda (makeParams exps) tail body
 
 makeParams :: [SObj] -> [String]
-makeParams [] = []
-makeParams (SSymbol x : xs) = x : makeParams xs
+makeParams exps = map (\(SSymbol name) -> name) exps
 
 evalSeq :: [SObj] -> Ref -> State Env SObj
 evalSeq exps r = foldM (\x y ->  eval y r) Nil exps
