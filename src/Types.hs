@@ -14,7 +14,7 @@ data SObj = SInt Int |
             SLambda Params DotParam Body Ref |
             Nil |
             Primitive String
-            deriving Eq
+            deriving (Eq,Ord)
 
 data Env = Node Frame (M.Map Int Env) deriving (Show, Eq)
 

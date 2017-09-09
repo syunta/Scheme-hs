@@ -1,21 +1,21 @@
 module Subr
 (
-  primitiveProcedures, getProc
+  primitiveProcedures, lookupPrimitive
 ) where
 
 import Types
+import qualified Data.Map as M
 
-primitiveProcedures :: [(String, SObj, [SObj] -> SObj)]
-primitiveProcedures = [("+", Primitive "+", primPlus),
-                       ("-", Primitive "-", primMinus),
-                       ("*", Primitive "*", primSub),
-                       ("/", Primitive "/", primDiv),
-                       ("=", Primitive "=", primE)]
+primitiveProcedures :: M.Map SObj ([SObj] -> SObj)
+primitiveProcedures = M.fromList
+  [(Primitive "+", primPlus),
+   (Primitive "-", primMinus),
+   (Primitive "*", primSub),
+   (Primitive "/", primDiv),
+   (Primitive "=", primE)]
 
-getProc :: String -> [(String, SObj, [SObj] -> SObj)] -> ([SObj] -> SObj)
-getProc key ((x, _, f):xs)
-  | key == x = f
-  | otherwise = getProc key xs
+lookupPrimitive :: SObj -> Maybe ([SObj] -> SObj)
+lookupPrimitive key = M.lookup key primitiveProcedures
 
 primPlus :: [SObj] -> SObj
 primPlus = foldl1 (calc (+))

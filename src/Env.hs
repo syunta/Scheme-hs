@@ -11,10 +11,10 @@ initialEnv :: Env
 initialEnv = Node (makeFrame primitiveProcedureNames primitiveProcedureObjects) M.empty
 
 primitiveProcedureNames :: [String]
-primitiveProcedureNames = map (\(n, _ , _) -> n) primitiveProcedures
+primitiveProcedureNames = map (\(Primitive x, _) -> x) $ M.toList primitiveProcedures
 
 primitiveProcedureObjects :: [SObj]
-primitiveProcedureObjects = map (\(_, p , _) -> p) primitiveProcedures
+primitiveProcedureObjects = map fst $ M.toList primitiveProcedures
 
 makeFrame :: [String] -> [SObj] -> Frame
 makeFrame vars vals = M.fromList $ zip vars vals

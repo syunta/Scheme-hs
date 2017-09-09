@@ -46,7 +46,12 @@ evalArgs :: [SObj] -> Ref -> State Env [SObj]
 evalArgs xs r = mapM (flip eval $ r) xs
 
 apply :: SObj -> [SObj] -> Ref -> State Env SObj
-apply (Primitive x) args r = return $ getProc x primitiveProcedures args
+apply (Primitive x) args r = do
+  let result = lookupPrimitive (Primitive x)
+  case result of
+    Nothing -> return Nil
+    Just p  -> return (p args)
+
 --apply (SLambda ps "" body lr) args e r =
 --  let (v, e') = evalSeq body ee er in
 --    (v, e')
