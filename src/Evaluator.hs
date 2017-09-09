@@ -30,8 +30,8 @@ eval (SList [SSymbol "quote", exp] _) r = return exp
 --eval (SList (SSymbol "define" : exps) _, env, r) = evalDef (exps, env, r)
 ---- if
 eval (SList (SSymbol "if" : exps) _) r = evalIf exps r
----- cond
---eval (SList (SSymbol "cond" : exps) _, env, r) = eval (cond2if $ SList (SSymbol "cond" : exps) Nil, env, r)
+-- cond
+eval (SList (SSymbol "cond" : exps) _) r = eval (cond2if $ SList (SSymbol "cond" : exps) Nil) r
 ---- lambda
 --eval (SList (SSymbol "lambda" : exps) _, env, r) = (makeLambda exps r, env)
 -- begin
@@ -74,19 +74,19 @@ evalIf [pred, cnsq, alt] r = do
   case result of
     SBool False -> eval alt r
     _           -> eval cnsq r
---
---cond2if :: SObj -> SObj
---cond2if (SList (SSymbol "cond" : clauses) _) = expandClause clauses
---
---expandClause :: [SObj] -> SObj
---expandClause [] = SBool False
---expandClause (SList (SSymbol "else" : clause) _ : _) = seq2begin clause
---expandClause (SList (pred:cnsq) _ : clauses) = SList [SSymbol "if", pred, seq2begin cnsq, expandClause clauses] Nil
---
---seq2begin :: [SObj] -> SObj
---seq2begin []   = Nil
---seq2begin exps = SList (SSymbol "begin" : exps) Nil
---
+
+cond2if :: SObj -> SObj
+cond2if (SList (SSymbol "cond" : clauses) _) = expandClause clauses
+
+expandClause :: [SObj] -> SObj
+expandClause [] = SBool False
+expandClause (SList (SSymbol "else" : clause) _ : _) = seq2begin clause
+expandClause (SList (pred:cnsq) _ : clauses) = SList [SSymbol "if", pred, seq2begin cnsq, expandClause clauses] Nil
+
+seq2begin :: [SObj] -> SObj
+seq2begin []   = Nil
+seq2begin exps = SList (SSymbol "begin" : exps) Nil
+
 --makeLambda :: Body -> Ref -> SObj
 --makeLambda (Nil:body) = SLambda [] "" body
 --makeLambda (SList exps Nil : body) = SLambda (makeParams exps) "" body
