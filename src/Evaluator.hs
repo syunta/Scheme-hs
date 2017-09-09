@@ -8,8 +8,8 @@ import Subr
 import Env
 import Control.Monad.State
 
-evl :: (SObj, Env) -> (SObj, Env)
-evl (exp, env) = runState (eval exp []) env
+evl :: SObj -> Env -> (SObj, Env)
+evl exp env = runState (eval exp []) env
 
 eval :: SObj -> Ref -> State Env SObj
 -- self evaluating

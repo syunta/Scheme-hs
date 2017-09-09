@@ -11,7 +11,7 @@ run env = do
     ""     -> run env
     _      -> do
       let (expr, rest)  = parse x
-          (val, newEnv) = evl (expr, env)
+          (val, newEnv) = evl expr env
       print val
       case rest of
         [] -> run newEnv
@@ -47,7 +47,7 @@ deleteHead (x:xs) = do
 evalRestPrint :: ([String], Env) -> IO Env
 evalRestPrint (x, env) = do
   let (expr, rest)  = parseTokens x
-      (val, newEnv) = evl (expr, env)
+      (val, newEnv) = evl expr env
   print val
   case rest of
     [] -> return newEnv
