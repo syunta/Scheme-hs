@@ -26,8 +26,8 @@ eval (SSymbol x) r = do
 eval (SList [SSymbol "quote", exp] _) r = return exp
 ---- assignment
 --eval (SList (SSymbol "set!" : exps) _, env, r) = evalSet (exps, env, r)
----- definition
---eval (SList (SSymbol "define" : exps) _, env, r) = evalDef (exps, env, r)
+-- definition
+eval (SList (SSymbol "define" : exps) _) r = evalDef exps r
 ---- if
 eval (SList (SSymbol "if" : exps) _) r = evalIf exps r
 -- cond
@@ -104,13 +104,21 @@ evalSeq exps r = foldM (\x y -> eval y r) Nil exps
 --  let (val', env') = eval (val, env, r) in
 --  (SSymbol "ok", setVar var val' env' r)
 
---evalDef :: ([SObj], Env, Ref) -> (SObj, Env)
---evalDef ([SSymbol var, SList (SSymbol "lambda" : body) _], env, r) =
---  (SSymbol "ok", defineVar var (makeLambda body r) env r)
---evalDef (SList (SSymbol var : params) Nil : body, env, r) =
---  (SSymbol "ok", defineVar var (makeLambda (SList params Nil : body) r) env r)
---evalDef (SList (SSymbol var : params) tail : body, env, r) =
---  (SSymbol "ok", defineVar var (makeLambda (SList params tail : body) r) env r)
---evalDef ([SSymbol var, val], env, r) =
---  let (val', env') = eval (val, env, r) in
---  (SSymbol "ok", defineVar var val' env' r)
+evalDef :: [SObj] -> Ref -> State Env SObj
+evalDef [SSymbol var, SList (SSymbol "lambda" : body) _] r = do
+  env <- get
+  put $ defineVar var (makeLambda body r) env r
+  return $ SSymbol "ok"
+evalDef (SList (SSymbol var : params) Nil : body) r = do
+  env <- get
+  put $ defineVar var (makeLambda (SList params Nil : body) r) env r
+  return $ SSymbol "ok"
+evalDef (SList (SSymbol var : params) tail : body) r = do
+  env <- get
+  put $ defineVar var (makeLambda (SList params tail : body) r) env r
+  return $ SSymbol "ok"
+evalDef [SSymbol var, val] r = do
+  val' <- eval val r
+  env <- get
+  put $ defineVar var val' env r
+  return $ SSymbol "ok"
