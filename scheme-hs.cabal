@@ -30,6 +30,7 @@ executable scheme-hs-exe
 test-suite scheme-hs-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
+  other-modules:       EvaluatorSpec, ParserSpec
   main-is:             Spec.hs
   build-depends:       base
                      , scheme-hs
