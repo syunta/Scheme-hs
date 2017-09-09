@@ -36,22 +36,17 @@ eval (SList (SSymbol "if" : exps) _) r = evalIf exps r
 --eval (SList (SSymbol "lambda" : exps) _, env, r) = (makeLambda exps r, env)
 ---- begin
 --eval (SList (SSymbol "begin" : exps) _, env, r) = evalSeq exps env r
----- application
---eval (SList (op:args) _, env, r) =
---  let (op', env')    = eval (op, env, r)
---      (args', env'') = evalArgs (args, env', r) in
---  apply op' args' env'' r
---
---evalArgs :: ([SObj], Env, Ref) -> ([SObj], Env)
---evalArgs (xs, env, r) = iter ([], env) xs
---  where
---    iter (ys, env) []         = (reverse ys, env)
---    iter (ys, env) (exp:exps) =
---      let (exp', env') = eval (exp, env, r) in
---          iter (exp' : ys, env') exps
---
---apply :: SObj -> [SObj] -> Env -> Ref -> (SObj, Env)
---apply (Primitive x) args env r = (getProc x primitiveProcedures args, env)
+-- application
+eval (SList (op:args) _) r = do
+  op' <- eval op r
+  args' <- evalArgs args r
+  apply op' args' r
+
+evalArgs :: [SObj] -> Ref -> State Env [SObj]
+evalArgs xs r = mapM (flip eval $ r) xs
+
+apply :: SObj -> [SObj] -> Ref -> State Env SObj
+apply (Primitive x) args r = return $ getProc x primitiveProcedures args
 --apply (SLambda ps "" body lr) args e r =
 --  let (v, e') = evalSeq body ee er in
 --    (v, e')
@@ -62,7 +57,7 @@ eval (SList (SSymbol "if" : exps) _) r = evalIf exps r
 --    (v, e')
 --    where ee = extendEnv (ps ++ [p]) (take (length ps) args ++ [SList (drop (length ps) args) Nil]) e
 --          er = extendRef e lr
---
+
 evalIf :: [SObj] -> Ref -> State Env SObj
 evalIf [pred, cnsq] r = do
   result <- eval pred r
