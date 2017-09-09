@@ -24,8 +24,8 @@ eval (SSymbol x) r = do
     Just v  -> return v
 -- quotation
 eval (SList [SSymbol "quote", exp] _) r = return exp
----- assignment
---eval (SList (SSymbol "set!" : exps) _, env, r) = evalSet (exps, env, r)
+-- assignment
+eval (SList (SSymbol "set!" : exps) _) r = evalSet exps r
 -- definition
 eval (SList (SSymbol "define" : exps) _) r = evalDef exps r
 ---- if
@@ -99,10 +99,12 @@ makeParams (SSymbol x : xs) = x : makeParams xs
 evalSeq :: [SObj] -> Ref -> State Env SObj
 evalSeq exps r = foldM (\x y -> eval y r) Nil exps
 
---evalSet :: ([SObj], Env, Ref) -> (SObj, Env)
---evalSet ([SSymbol var, val], env, r) =
---  let (val', env') = eval (val, env, r) in
---  (SSymbol "ok", setVar var val' env' r)
+evalSet :: [SObj] -> Ref -> State Env SObj
+evalSet [SSymbol var, val] r = do
+  val' <- eval val r
+  env <- get
+  put $ setVar var val' env r
+  return $ SSymbol "ok"
 
 evalDef :: [SObj] -> Ref -> State Env SObj
 evalDef [SSymbol var, SList (SSymbol "lambda" : body) _] r = do
