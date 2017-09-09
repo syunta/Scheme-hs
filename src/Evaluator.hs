@@ -21,8 +21,8 @@ eval (SBool x) r = return (SBool x)
 --  case val of
 --    Nothing -> (Nil, env)
 --    Just v  -> (v, env)
----- quotation
---eval (SList [SSymbol "quote", exp] _, env, r) = (exp, env)
+-- quotation
+eval (SList [SSymbol "quote", exp] _) r = return exp
 ---- assignment
 --eval (SList (SSymbol "set!" : exps) _, env, r) = evalSet (exps, env, r)
 ---- definition

@@ -17,10 +17,10 @@ spec = do
   describe "eval" $ do
     it "evaluates self-evaluating-value" $ do
       eval' (parse' "10", initialEnv) `shouldBe` parse' "10"
---    it "evaluates quoted expression" $ do
---      eval' (parse' "'10", initialEnv) `shouldBe` parse' "10"
---      eval' (parse' "'(1 2 3)", initialEnv) `shouldBe` parse' "(1 2 3)"
---      eval' (parse' "'hoge", initialEnv) `shouldBe` parse' "hoge"
+    it "evaluates quoted expression" $ do
+      eval' (parse' "'10", initialEnv) `shouldBe` parse' "10"
+      eval' (parse' "'(1 2 3)", initialEnv) `shouldBe` parse' "(1 2 3)"
+      eval' (parse' "'hoge", initialEnv) `shouldBe` parse' "hoge"
 --    it "evaluates set! syntax" $ do
 --      eval' (parse' "(begin (define x 1) (set! x 2) x)", initialEnv) `shouldBe` parse' "2"
 --      eval' (parse' "(begin (define x 1) (set! x (+ x 1)) x)", initialEnv) `shouldBe` parse' "2"
