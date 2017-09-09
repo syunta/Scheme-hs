@@ -29,12 +29,12 @@ spec = do
 --      eval' (parse' "(begin (define hoge 20) hoge)", initialEnv) `shouldBe` parse' "20"
 --      eval' (parse' "(begin (define hoge 20) (define hoge 10) hoge)", initialEnv) `shouldBe` parse' "10"
 --      eval' (parse' "(begin (define hoge (+ 9 1)) hoge)", initialEnv) `shouldBe` parse' "10"
---    it "evaluates if syntax" $ do
---      eval' (parse' "(if #f 3)", initialEnv) `shouldBe` parse' "#f"
---      eval' (parse' "(if #t 3)", initialEnv) `shouldBe` parse' "3"
---      eval' (parse' "(if 10 10)", initialEnv) `shouldBe` parse' "10"
---      eval' (parse' "(if #f 1 0)", initialEnv) `shouldBe` parse' "0"
---      eval' (parse' "(if #t 1 0)", initialEnv) `shouldBe` parse' "1"
+    it "evaluates if syntax" $ do
+      eval' (parse' "(if #f 3)", initialEnv) `shouldBe` parse' "#f"
+      eval' (parse' "(if #t 3)", initialEnv) `shouldBe` parse' "3"
+      eval' (parse' "(if 10 10)", initialEnv) `shouldBe` parse' "10"
+      eval' (parse' "(if #f 1 0)", initialEnv) `shouldBe` parse' "0"
+      eval' (parse' "(if #t 1 0)", initialEnv) `shouldBe` parse' "1"
 --    it "evaluates cond syntax" $ do
 --      eval' (parse' "(cond ((= 0 1) 0) (else 1))", initialEnv) `shouldBe` parse' "1"
 --      eval' (parse' "(cond ((= 0 1) 0))", initialEnv) `shouldBe` parse' "#f"

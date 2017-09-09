@@ -28,7 +28,9 @@ eval (SList [SSymbol "quote", exp] _) r = return exp
 ---- definition
 --eval (SList (SSymbol "define" : exps) _, env, r) = evalDef (exps, env, r)
 ---- if
---eval (SList (SSymbol "if" : exps) _, env, r) = evalIf (exps, env, r)
+eval (SList (SSymbol "if" : exps) _) r = do
+  val <- evalIf exps r
+  return val
 ---- cond
 --eval (SList (SSymbol "cond" : exps) _, env, r) = eval (cond2if $ SList (SSymbol "cond" : exps) Nil, env, r)
 ---- lambda
@@ -62,17 +64,17 @@ eval (SList [SSymbol "quote", exp] _) r = return exp
 --    where ee = extendEnv (ps ++ [p]) (take (length ps) args ++ [SList (drop (length ps) args) Nil]) e
 --          er = extendRef e lr
 --
---evalIf :: ([SObj], Env, Ref) -> (SObj, Env)
---evalIf ([pred, cnsq], env, r) =
---  let result = eval (pred, env, r) in
---    case result of
---      (SBool False, env) -> (SBool False, env)
---      _                  -> eval (cnsq, env, r)
---evalIf ([pred, cnsq, alt], env, r) =
---  let result = eval (pred, env, r) in
---    case result of
---      (SBool False, env) -> eval (alt, env, r)
---      _                  -> eval (cnsq, env, r)
+evalIf :: [SObj] -> Ref -> State Env SObj
+evalIf [pred, cnsq] r = do
+  result <- eval pred r
+  case result of
+    SBool False -> return (SBool False)
+    _           -> eval cnsq r
+evalIf [pred, cnsq, alt] r = do
+  result <- eval pred r
+  case result of
+    SBool False -> eval alt r
+    _           -> eval cnsq r
 --
 --cond2if :: SObj -> SObj
 --cond2if (SList (SSymbol "cond" : clauses) _) = expandClause clauses
