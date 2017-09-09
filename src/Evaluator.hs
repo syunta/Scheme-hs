@@ -34,8 +34,8 @@ eval (SList (SSymbol "if" : exps) _) r = evalIf exps r
 --eval (SList (SSymbol "cond" : exps) _, env, r) = eval (cond2if $ SList (SSymbol "cond" : exps) Nil, env, r)
 ---- lambda
 --eval (SList (SSymbol "lambda" : exps) _, env, r) = (makeLambda exps r, env)
----- begin
---eval (SList (SSymbol "begin" : exps) _, env, r) = evalSeq exps env r
+-- begin
+eval (SList (SSymbol "begin" : exps) _) r = evalSeq exps r
 -- application
 eval (SList (op:args) _) r = do
   op' <- eval op r
@@ -95,14 +95,10 @@ evalIf [pred, cnsq, alt] r = do
 --makeParams :: [SObj] -> [String]
 --makeParams [] = []
 --makeParams (SSymbol x : xs) = x : makeParams xs
---
---evalSeq :: [SObj] -> Env -> Ref -> (SObj, Env)
---evalSeq xs env r = iter (Nil, env) xs
---  -- iter :: (SObj, Env) -> [SObj] -> (SObj, Env)
---  where
---    iter x        []         = x
---    iter (_, env) (exp:exps) = iter (eval (exp, env, r)) exps
---
+
+evalSeq :: [SObj] -> Ref -> State Env SObj
+evalSeq exps r = foldM (\x y -> eval y r) Nil exps
+
 --evalSet :: ([SObj], Env, Ref) -> (SObj, Env)
 --evalSet ([SSymbol var, val], env, r) =
 --  let (val', env') = eval (val, env, r) in

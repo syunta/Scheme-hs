@@ -43,8 +43,8 @@ spec = do
 --      eval' (parse' "(lambda () 1 2)", initialEnv) `shouldBe` SLambda [] "" [SInt 1, SInt 2] []
 --      eval' (parse' "(lambda (x) 1)", initialEnv) `shouldBe` SLambda ["x"] "" [SInt 1] []
 --      eval' (parse' "(lambda (x . args) 1)", initialEnv) `shouldBe` SLambda ["x"] "args" [SInt 1] []
---    it "evaluates begin syntax" $ do
---      eval' (parse' "(begin 1 2 3 4 5)", initialEnv) `shouldBe` parse' "5"
+    it "evaluates begin syntax" $ do
+      eval' (parse' "(begin 1 2 3 4 5)", initialEnv) `shouldBe` parse' "5"
     it "evaluates primitive procedure" $ do
       eval' (parse' "(+ 2 4)", initialEnv) `shouldBe` parse' "6"
       eval' (parse' "(+ 2 4 10)", initialEnv) `shouldBe` parse' "16"
