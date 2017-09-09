@@ -13,8 +13,8 @@ evl (exp, env) = runState (eval exp []) env
 
 eval :: SObj -> Ref -> State Env SObj
 -- self evaluating
-eval (SInt x) r = return (SInt x)
-eval (SBool x) r = return (SBool x)
+eval (SInt x) r = return $ SInt x
+eval (SBool x) r = return $ SBool x
 ---- variable
 --eval (SSymbol x, env, r) = do
 --  let val = lookupEnv x env r
@@ -28,9 +28,7 @@ eval (SList [SSymbol "quote", exp] _) r = return exp
 ---- definition
 --eval (SList (SSymbol "define" : exps) _, env, r) = evalDef (exps, env, r)
 ---- if
-eval (SList (SSymbol "if" : exps) _) r = do
-  val <- evalIf exps r
-  return val
+eval (SList (SSymbol "if" : exps) _) r = evalIf exps r
 ---- cond
 --eval (SList (SSymbol "cond" : exps) _, env, r) = eval (cond2if $ SList (SSymbol "cond" : exps) Nil, env, r)
 ---- lambda
@@ -68,7 +66,7 @@ evalIf :: [SObj] -> Ref -> State Env SObj
 evalIf [pred, cnsq] r = do
   result <- eval pred r
   case result of
-    SBool False -> return (SBool False)
+    SBool False -> return $ SBool False
     _           -> eval cnsq r
 evalIf [pred, cnsq, alt] r = do
   result <- eval pred r
