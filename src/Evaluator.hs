@@ -51,17 +51,19 @@ apply (Primitive x) args r = do
   case result of
     Nothing -> return Nil
     Just p  -> return (p args)
-
---apply (SLambda ps "" body lr) args e r =
---  let (v, e') = evalSeq body ee er in
---    (v, e')
---    where ee = extendEnv ps args e
---          er = extendRef e lr
---apply (SLambda ps p body lr) args e r =
---  let (v, e') = evalSeq body ee er in
---    (v, e')
---    where ee = extendEnv (ps ++ [p]) (take (length ps) args ++ [SList (drop (length ps) args) Nil]) e
---          er = extendRef e lr
+apply (SLambda params "" body lr) args r = do
+  env <- get
+  put $ extendEnv params args env
+  env' <- get
+  val <- evalSeq body (extendRef env lr)
+  return val
+apply (SLambda params p body lr) args r = do
+  env <- get
+  let n = length params in do
+    put $ extendEnv (params ++ [p]) (take n args ++ [SList (drop n args) Nil]) env
+    env' <- get
+    val <- evalSeq body (extendRef env lr)
+    return val
 
 evalIf :: [SObj] -> Ref -> State Env SObj
 evalIf [pred, cnsq] r = do
@@ -97,7 +99,7 @@ makeParams [] = []
 makeParams (SSymbol x : xs) = x : makeParams xs
 
 evalSeq :: [SObj] -> Ref -> State Env SObj
-evalSeq exps r = foldM (\x y -> eval y r) Nil exps
+evalSeq exps r = foldM (\x y ->  eval y r) Nil exps
 
 evalSet :: [SObj] -> Ref -> State Env SObj
 evalSet [SSymbol var, val] r = do

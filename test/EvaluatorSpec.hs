@@ -24,7 +24,7 @@ spec = do
     it "evaluates set! syntax" $ do
       eval' (parse' "(begin (define x 1) (set! x 2) x)", initialEnv) `shouldBe` parse' "2"
       eval' (parse' "(begin (define x 1) (set! x (+ x 1)) x)", initialEnv) `shouldBe` parse' "2"
---      eval' (parse' "(begin (define c 0) (define (plus!) (set! c (+ c 1)) +) (define (one!) (set! c (+ c 1)) 1) ((plus!) (one!) (one!)) c)", initialEnv) `shouldBe` parse' "3"
+      eval' (parse' "(begin (define c 0) (define (plus!) (set! c (+ c 1)) +) (define (one!) (set! c (+ c 1)) 1) ((plus!) (one!) (one!)) c)", initialEnv) `shouldBe` parse' "3"
     it "evaluates define syntax" $ do
       eval' (parse' "(begin (define hoge 20) hoge)", initialEnv) `shouldBe` parse' "20"
       eval' (parse' "(begin (define hoge 20) (define hoge 10) hoge)", initialEnv) `shouldBe` parse' "10"
@@ -53,11 +53,11 @@ spec = do
       eval' (parse' "(- 10 3 2)", initialEnv) `shouldBe` parse' "5"
       eval' (parse' "(* 2 3 5)", initialEnv) `shouldBe` parse' "30"
       eval' (parse' "(/ 10 2)", initialEnv) `shouldBe` parse' "5"
---    it "evaluates compound procedure" $ do
---      eval' (parse' "((lambda (x y) (+ x y)) 3 5)", initialEnv) `shouldBe` parse' "8"
---      eval' (parse' "(begin (define plus (lambda (x y) (+ x y))) (plus 3 5))", initialEnv) `shouldBe` parse' "8"
---      eval' (parse' "(begin (define (plus x y) (+ x y)) (plus 2 5))", initialEnv) `shouldBe` parse' "7"
---      eval' (parse' "(begin (define (tail x . args) args) (tail 2 5 9))", initialEnv) `shouldBe` parse' "(5 9)"
---      eval'
---        (parse' "(begin (define (fib n) (if (= n 0) 0 (if (= n 1) 1 (+ (fib (- n 1)) (fib (- n 2)))))) (fib 10))", initialEnv)
---        `shouldBe` parse' "55"
+    it "evaluates compound procedure" $ do
+      eval' (parse' "((lambda (x y) (+ x y)) 3 5)", initialEnv) `shouldBe` parse' "8"
+      eval' (parse' "(begin (define plus (lambda (x y) (+ x y))) (plus 3 5))", initialEnv) `shouldBe` parse' "8"
+      eval' (parse' "(begin (define (plus x y) (+ x y)) (plus 2 5))", initialEnv) `shouldBe` parse' "7"
+      eval' (parse' "(begin (define (tail x . args) args) (tail 2 5 9))", initialEnv) `shouldBe` parse' "(5 9)"
+      eval'
+        (parse' "(begin (define (fib n) (if (= n 0) 0 (if (= n 1) 1 (+ (fib (- n 1)) (fib (- n 2)))))) (fib 10))", initialEnv)
+        `shouldBe` parse' "55"
