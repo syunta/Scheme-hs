@@ -15,12 +15,13 @@ eval :: SObj -> Ref -> State Env SObj
 -- self evaluating
 eval (SInt x) r = return $ SInt x
 eval (SBool x) r = return $ SBool x
----- variable
---eval (SSymbol x, env, r) = do
---  let val = lookupEnv x env r
---  case val of
---    Nothing -> (Nil, env)
---    Just v  -> (v, env)
+-- variable
+eval (SSymbol x) r = do
+  env <- get
+  let val = lookupEnv x env r
+  case val of
+    Nothing -> return Nil
+    Just v  -> return v
 -- quotation
 eval (SList [SSymbol "quote", exp] _) r = return exp
 ---- assignment
