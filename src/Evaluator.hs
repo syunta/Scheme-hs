@@ -18,8 +18,8 @@ eval (SInt x) = return $ SInt x
 eval (SBool x) = return $ SBool x
 -- variable
 eval (SSymbol x) = do
-  (env, r) <- get
-  let val = lookupEnv x env r
+  env <- get
+  let val = lookupEnv x env
   case val of
     Nothing -> return Nil
     Just v  -> return v
@@ -110,25 +110,25 @@ evalSeq exps = foldM (\x y ->  eval y) Nil exps
 evalSet :: [SObj] -> State (Env, Ref) SObj
 evalSet [SSymbol var, val] = do
   val' <- eval val
-  (env, r) <- get
-  put $ (setVar var val' env r, r)
+  env <- get
+  put $ setVar var val' env
   return $ SSymbol "ok"
 
 evalDef :: [SObj] -> State (Env, Ref) SObj
 evalDef [SSymbol var, SList (SSymbol "lambda" : body) _] = do
   (env, r) <- get
-  put $ (defineVar var (makeLambda body r) env r, r)
+  put $ defineVar var (makeLambda body r) (env, r)
   return $ SSymbol "ok"
 evalDef (SList (SSymbol var : params) Nil : body) = do
   (env, r) <- get
-  put $ (defineVar var (makeLambda (SList params Nil : body) r) env r, r)
+  put $ defineVar var (makeLambda (SList params Nil : body) r) (env, r)
   return $ SSymbol "ok"
 evalDef (SList (SSymbol var : params) tail : body) = do
   (env, r) <- get
-  put $ (defineVar var (makeLambda (SList params tail : body) r) env r, r)
+  put $ defineVar var (makeLambda (SList params tail : body) r) (env, r)
   return $ SSymbol "ok"
 evalDef [SSymbol var, val] = do
   val' <- eval val
-  (env, r) <- get
-  put $ (defineVar var val' env r, r)
+  env <- get
+  put $ defineVar var val' env
   return $ SSymbol "ok"
