@@ -5,23 +5,28 @@ import Env
 
 run :: Env -> IO ()
 run env = do
-  x <- readPrompt
-  case x of
+  input <- readPrompt
+  case input of
     "exit" -> return ()
     ""     -> run env
     _      -> do
-      let (expr, rest) = parse x
-          result = evl expr env
-      case result of
-        Right (val, newEnv) -> do
-          print val
-          case rest of
-            [] -> run newEnv
-            _  -> do newEnv' <- evalRestPrint (rest, newEnv)
-                     run newEnv'
-        Left err -> do
-          print err
-          run env
+      let tokens = tokenize input
+      newEnv <- evalPrint tokens env
+      run newEnv
+
+evalPrint :: [String] -> Env -> IO Env
+evalPrint x env = do
+  let (expr, rest) = parseTokens x
+      result = evl expr env
+  case result of
+    Right (val, newEnv) -> do
+      print val
+      case rest of
+        [] -> return newEnv
+        _  -> evalPrint rest newEnv
+    Left err -> do
+      print err
+      return env
 
 readPrompt :: IO String
 readPrompt = do
@@ -48,20 +53,6 @@ deleteHead [] = do
 deleteHead (x:xs) = do
   putStr "\ESC[1D\ESC[1D\ESC[1D   \ESC[1D\ESC[1D\ESC[1D"
   return xs
-
-evalRestPrint :: ([String], Env) -> IO Env
-evalRestPrint (x, env) = do
-  let (expr, rest) = parseTokens x
-      result = evl expr env
-  case result of
-    Right (val, newEnv) -> do
-      print val
-      case rest of
-        [] -> return newEnv
-        _  -> evalRestPrint (rest, newEnv)
-    Left err -> do
-      print err
-      return env
 
 main :: IO ()
 main = run initialEnv

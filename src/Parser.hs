@@ -1,6 +1,6 @@
 module Parser
 (
-  parse, parseTokens
+  parse, parseTokens, tokenize
 ) where
 
 import Types
