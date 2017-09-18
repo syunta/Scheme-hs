@@ -12,7 +12,7 @@ evl :: SObj -> Env -> (SObj, Env)
 evl exp env = let (val, (env', _)) = runState (eval exp) $ (env, []) in
                 (val, env')
 
-eval :: SObj -> State (Env, Ref) SObj
+eval :: SObj -> State (Env, [Ref]) SObj
 -- self evaluating
 eval (SInt x) = return $ SInt x
 eval (SBool x) = return $ SBool x
@@ -45,10 +45,10 @@ eval (SList (op:args) _) = do
   args' <- evalArgs args
   apply op' args'
 
-evalArgs :: [SObj] -> State (Env, Ref) [SObj]
+evalArgs :: [SObj] -> State (Env, [Ref]) [SObj]
 evalArgs exps = mapM eval exps
 
-apply :: SObj -> [SObj] -> State (Env, Ref) SObj
+apply :: SObj -> [SObj] -> State (Env, [Ref]) SObj
 apply (Primitive x) args = do
   let result = lookupPrimitive (Primitive x)
   case result of
@@ -72,7 +72,7 @@ apply (SLambda params p body lr) args = do
   put (env', r)
   return val
 
-evalIf :: [SObj] -> State (Env, Ref) SObj
+evalIf :: [SObj] -> State (Env, [Ref]) SObj
 evalIf [pred, cnsq] = do
   result <- eval pred
   case result of
@@ -96,7 +96,7 @@ seq2begin :: [SObj] -> SObj
 seq2begin []   = Nil
 seq2begin exps = SList (SSymbol "begin" : exps) Nil
 
-makeLambda :: Body -> Ref -> SObj
+makeLambda :: Body -> [Ref] -> SObj
 makeLambda (Nil:body) = SLambda [] "" body
 makeLambda (SList exps Nil : body) = SLambda (makeParams exps) "" body
 makeLambda (SList exps (SSymbol tail) : body) = SLambda (makeParams exps) tail body
@@ -104,17 +104,17 @@ makeLambda (SList exps (SSymbol tail) : body) = SLambda (makeParams exps) tail b
 makeParams :: [SObj] -> [String]
 makeParams exps = map (\(SSymbol name) -> name) exps
 
-evalSeq :: [SObj] -> State (Env, Ref) SObj
+evalSeq :: [SObj] -> State (Env, [Ref]) SObj
 evalSeq exps = foldM (\x y ->  eval y) Nil exps
 
-evalSet :: [SObj] -> State (Env, Ref) SObj
+evalSet :: [SObj] -> State (Env, [Ref]) SObj
 evalSet [SSymbol var, val] = do
   val' <- eval val
   env <- get
   put $ setVar var val' env
   return $ SSymbol "ok"
 
-evalDef :: [SObj] -> State (Env, Ref) SObj
+evalDef :: [SObj] -> State (Env, [Ref]) SObj
 evalDef [SSymbol var, SList (SSymbol "lambda" : body) _] = do
   (env, r) <- get
   put $ defineVar var (makeLambda body r) (env, r)

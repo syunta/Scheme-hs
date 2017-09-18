@@ -11,15 +11,15 @@ data SObj = SInt Int |
             SSymbol String |
             SList [SObj] SObj |
             SBool Bool |
-            SLambda Params DotParam Body Ref |
+            SLambda Params DotParam Body [Ref] |
             Nil |
             Primitive String
             deriving (Eq,Ord)
 
-data Env = Node Frame (M.Map Int Env) deriving (Show, Eq)
+data Env = Node Frame (M.Map Ref Env) deriving (Show, Eq)
 
 type Frame = M.Map String SObj
-type Ref = [Int]
+type Ref = Int
 type Params = [String]
 type DotParam = String
 type Body = [SObj]

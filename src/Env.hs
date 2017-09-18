@@ -22,7 +22,7 @@ makeFrame vars vals = M.fromList $ zip vars vals
 extendEnv :: [String] -> [SObj] -> Env -> Env
 extendEnv vars vals (Node f e) = Node f $ M.insert (keyPos e) (Node (makeFrame vars vals) M.empty) e
 
-lookupEnv :: String -> (Env, Ref) -> Maybe SObj
+lookupEnv :: String -> (Env, [Ref]) -> Maybe SObj
 lookupEnv var (Node f _, []) = M.lookup var f
 lookupEnv var (e, r:rs) = do
   f <- scanEnv (e, r:rs)
@@ -31,19 +31,19 @@ lookupEnv var (e, r:rs) = do
     Nothing -> lookupEnv var (e, rs)
     _       -> val
 
-scanEnv :: (Env, Ref) -> Maybe Frame
+scanEnv :: (Env, [Ref]) -> Maybe Frame
 scanEnv (Node f _, [])   = Just f
 scanEnv (Node _ e, r:rs) = do
   e <- M.lookup r e
   scanEnv (e, rs)
 
-bottomEnv :: (Env, Ref) -> Maybe (M.Map Int Env)
+bottomEnv :: (Env, [Ref]) -> Maybe (M.Map Int Env)
 bottomEnv (Node _ e, [])   = Just e
 bottomEnv (Node _ e, r:rs) = do
   e <- M.lookup r e
   bottomEnv (e, rs)
 
-defineVar :: String -> SObj -> (Env, Ref) -> (Env, Ref)
+defineVar :: String -> SObj -> (Env, [Ref]) -> (Env, [Ref])
 defineVar var val (e, r) = do
   let ret = scanEnv (e, r)
   case ret of
@@ -51,7 +51,7 @@ defineVar var val (e, r) = do
     Just f  -> let newf = M.insert var val f in
                  replace newf (e, r)
 
-setVar :: String -> SObj -> (Env, Ref) -> (Env, Ref)
+setVar :: String -> SObj -> (Env, [Ref]) -> (Env, [Ref])
 setVar var val (Node f e, []) =
   let bind = M.lookup var f in
   case bind of
@@ -70,7 +70,7 @@ setVar var val (e, r) = do
         Just _  -> let newf = M.insert var val f in
                     replace newf (e, r)
 
-replace :: Frame -> (Env, Ref) -> (Env, Ref)
+replace :: Frame -> (Env, [Ref]) -> (Env, [Ref])
 replace f (Node _ e, []) = (Node f e, [])
 replace f (Node f' e, r:rs) =
   let ret = M.lookup r e in
@@ -80,7 +80,7 @@ replace f (Node f' e, r:rs) =
       let (newe, _) = replace f (e', rs) in
       (Node f' (M.insert r newe e), r:rs)
 
-extendRef :: Env -> Ref -> Ref
+extendRef :: Env -> [Ref] -> [Ref]
 extendRef e rs = do
   let m = bottomEnv (e, rs)
   case m of
