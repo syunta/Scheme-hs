@@ -7,6 +7,7 @@ import Types
 import Subr
 import Env
 import Control.Monad.State
+import Control.Monad.Except
 
 evl :: SObj -> Env -> SError (SObj, Env)
 evl exp env = do
@@ -22,7 +23,7 @@ eval (SSymbol x) = do
   env <- get
   let val = lookupEnv x env
   case val of
-    Nothing -> return Nil
+    Nothing -> throwError $ "Unbound variable -- " ++ x
     Just v  -> return v
 -- quotation
 eval (SList [SSymbol "quote", exp] _) = return exp
@@ -45,7 +46,7 @@ eval (SList (op:args) _) = do
   op' <- eval op
   args' <- evalArgs args
   apply op' args'
-_ = Left "Unknown procedure type -- APPLY"
+eval exp = throwError $ "Unknown expression type -- " ++ show exp
 
 evalArgs :: [SObj] -> StateE SEnv [SObj]
 evalArgs exps = mapM eval exps
@@ -57,6 +58,8 @@ apply (Primitive x) args = do
     Nothing -> return Nil
     Just p  -> return (p args)
 apply (SLambda params "" body lr) args = do
+  when (length params < length args) $ throwError $ "Too many arguments supplied -- " ++ show params ++ ":" ++ show args
+  when (length params > length args) $ throwError $ "Too few arguments supplied -- " ++ show params ++ ":" ++ show args
   (env, r) <- get
   put $ (extendEnv params args env, extendRef env lr)
   val <- evalSeq body
@@ -66,13 +69,17 @@ apply (SLambda params "" body lr) args = do
 apply (SLambda params p body lr) args = do
   (env, r) <- get
   let n = length params
-  let newEnv = extendEnv (params ++ [p]) (take n args ++ [SList (drop n args) Nil]) env
+  let params' = params ++ [p]
+  let args'   = take n args ++ [SList (drop n args) Nil]
+  when (length params > length args) $ throwError $ "Too few arguments supplied -- " ++ show params ++ ":" ++ show args
+  let newEnv = extendEnv params' args' env
   let newRef = extendRef env lr
   put $ (newEnv, newRef)
   val <- evalSeq body
   (env', _) <- get
   put (env', r)
   return val
+apply exp args = throwError $ "Invalid application -- " ++ show exp
 
 evalIf :: [SObj] -> StateE SEnv SObj
 evalIf [pred, cnsq] = do
@@ -85,6 +92,7 @@ evalIf [pred, cnsq, alt] = do
   case result of
     SBool False -> eval alt
     _           -> eval cnsq
+evalIf exps = throwError $ "Syntax error: if -- " ++ show exps
 
 cond2if :: SObj -> SObj
 cond2if (SList (SSymbol "cond" : clauses) _) = expandClause clauses

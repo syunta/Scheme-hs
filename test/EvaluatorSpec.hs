@@ -15,6 +15,13 @@ parseEval str = do
   (val, _) <- evl exp initialEnv
   return val
 
+match :: String -> String -> Bool
+match [] _ = True
+match _ [] = False
+match (x:xs) (y:ys)
+  | x == y    = match xs ys
+  | otherwise = match (x:xs) ys
+
 spec :: Spec
 spec = do
   describe "eval" $ do
@@ -62,3 +69,16 @@ spec = do
       parseEval "(begin (define (plus x y) (+ x y)) (plus 2 5))" `shouldBe` parse' "7"
       parseEval "(begin (define (tail x . args) args) (tail 2 5 9))" `shouldBe` parse' "(5 9)"
       parseEval "(begin (define (fib n) (if (= n 0) 0 (if (= n 1) 1 (+ (fib (- n 1)) (fib (- n 2)))))) (fib 10))" `shouldBe` parse' "55"
+    it "throws errors" $ do
+      let (Left err) = parseEval "(3 5)"
+      match "Invalid application" err  `shouldBe` True
+      let (Left err) = parseEval "(if #t)"
+      match "Syntax error: if" err  `shouldBe` True
+      let (Left err) = parseEval "(begin (define (plus x y) (+ x y)) (plus 1 2 3))"
+      match "Too many arguments supplied" err  `shouldBe` True
+      let (Left err) = parseEval "(begin (define (plus x y) (+ x y)) (plus 1))"
+      match "Too few arguments supplied" err  `shouldBe` True
+      let (Left err) = parseEval "(begin (define (tail x y . args) args) (tail 2))"
+      match "Too few arguments supplied" err  `shouldBe` True
+      let (Left err) = parseEval "(x 10)"
+      match "Unbound variable" err  `shouldBe` True
