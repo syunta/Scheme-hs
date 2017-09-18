@@ -63,8 +63,7 @@ apply (SLambda params "" body lr) args = do
   (env, r) <- get
   put $ (extendEnv params args env, extendRef env lr)
   val <- evalSeq body
-  (env', _) <- get
-  put (env', r)
+  modify (\(env', _) -> (env', r))
   return val
 apply (SLambda params p body lr) args = do
   (env, r) <- get
@@ -76,8 +75,7 @@ apply (SLambda params p body lr) args = do
   let newRef = extendRef env lr
   put $ (newEnv, newRef)
   val <- evalSeq body
-  (env', _) <- get
-  put (env', r)
+  modify (\(env', _) -> (env', r))
   return val
 apply exp args = throwError $ "Invalid application -- " ++ show exp
 
