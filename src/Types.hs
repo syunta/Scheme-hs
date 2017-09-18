@@ -3,10 +3,13 @@ module Types
   SObj(..),
   Env(..),
   SEnv(..),
+  SError(..),
+  StateE(..),
   Frame, Body, Ref, Params, DotParam
 ) where
 
 import qualified Data.Map as M
+import Control.Monad.State
 
 data SObj = SInt Int |
             SSymbol String |
@@ -18,6 +21,9 @@ data SObj = SInt Int |
             deriving (Eq,Ord)
 
 data Env = Node Frame (M.Map Ref Env) deriving (Show, Eq)
+
+type SError = Either String
+type StateE s a = StateT s SError a
 
 type Frame = M.Map String SObj
 type Ref = Int
