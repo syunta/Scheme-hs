@@ -2,6 +2,7 @@ module Types
 (
   SObj(..),
   Env(..),
+  SEnv(..),
   Frame, Body, Ref, Params, DotParam
 ) where
 
@@ -20,6 +21,7 @@ data Env = Node Frame (M.Map Ref Env) deriving (Show, Eq)
 
 type Frame = M.Map String SObj
 type Ref = Int
+type SEnv = (Env, [Ref])
 type Params = [String]
 type DotParam = String
 type Body = [SObj]
