@@ -6,11 +6,14 @@ import Parser
 import Types
 import Env
 
-parse' :: String -> SObj
-parse' = fst . parse
+parse' :: String -> SError SObj
+parse' str = Right $ fst . parse $ str
 
-parseEval :: String -> SObj
-parseEval exp = fst $ evl (parse' exp) initialEnv
+parseEval :: String -> SError SObj
+parseEval str = do
+  exp <- parse' str
+  (val, _) <- evl exp initialEnv
+  return val
 
 spec :: Spec
 spec = do
@@ -41,9 +44,9 @@ spec = do
       parseEval "(cond ((= 0 1) 0))" `shouldBe` parse' "#f"
       parseEval "(cond ((= 0 1) 0) ((= 1 1) 0 (+ 2 1)) (else 9))" `shouldBe` parse' "3"
     it "evaluates lambda syntax" $ do
-      parseEval "(lambda () 1 2)" `shouldBe` SLambda [] "" [SInt 1, SInt 2] []
-      parseEval "(lambda (x) 1)" `shouldBe` SLambda ["x"] "" [SInt 1] []
-      parseEval "(lambda (x . args) 1)" `shouldBe` SLambda ["x"] "args" [SInt 1] []
+      parseEval "(lambda () 1 2)" `shouldBe` Right (SLambda [] "" [SInt 1, SInt 2] [])
+      parseEval "(lambda (x) 1)" `shouldBe` Right (SLambda ["x"] "" [SInt 1] [])
+      parseEval "(lambda (x . args) 1)" `shouldBe` Right (SLambda ["x"] "args" [SInt 1] [])
     it "evaluates begin syntax" $ do
       parseEval "(begin 1 2 3 4 5)" `shouldBe` parse' "5"
     it "evaluates primitive procedure" $ do

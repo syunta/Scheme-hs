@@ -10,13 +10,18 @@ run env = do
     "exit" -> return ()
     ""     -> run env
     _      -> do
-      let (expr, rest)  = parse x
-          (val, newEnv) = evl expr env
-      print val
-      case rest of
-        [] -> run newEnv
-        _  -> do newEnv' <- evalRestPrint (rest, newEnv)
-                 run newEnv'
+      let (expr, rest) = parse x
+          result = evl expr env
+      case result of
+        Right (val, newEnv) -> do
+          print val
+          case rest of
+            [] -> run newEnv
+            _  -> do newEnv' <- evalRestPrint (rest, newEnv)
+                     run newEnv'
+        Left err -> do
+          print err
+          run env
 
 readPrompt :: IO String
 readPrompt = do
@@ -46,12 +51,17 @@ deleteHead (x:xs) = do
 
 evalRestPrint :: ([String], Env) -> IO Env
 evalRestPrint (x, env) = do
-  let (expr, rest)  = parseTokens x
-      (val, newEnv) = evl expr env
-  print val
-  case rest of
-    [] -> return newEnv
-    _  -> evalRestPrint (rest, newEnv)
+  let (expr, rest) = parseTokens x
+      result = evl expr env
+  case result of
+    Right (val, newEnv) -> do
+      print val
+      case rest of
+        [] -> return newEnv
+        _  -> evalRestPrint (rest, newEnv)
+    Left err -> do
+      print err
+      return env
 
 main :: IO ()
 main = run initialEnv

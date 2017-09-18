@@ -8,9 +8,10 @@ import Subr
 import Env
 import Control.Monad.State
 
-evl :: SObj -> Env -> (SObj, Env)
-evl exp env = let Right (val, (env', _)) = runStateT (eval exp) (env, []) in
-                (val, env')
+evl :: SObj -> Env -> SError (SObj, Env)
+evl exp env = do
+   (val, (env, _)) <- runStateT (eval exp) (env, [])
+   return (val, env)
 
 eval :: SObj -> StateE SEnv SObj
 -- self evaluating
@@ -44,6 +45,7 @@ eval (SList (op:args) _) = do
   op' <- eval op
   args' <- evalArgs args
   apply op' args'
+_ = Left "Unknown procedure type -- APPLY"
 
 evalArgs :: [SObj] -> StateE SEnv [SObj]
 evalArgs exps = mapM eval exps
