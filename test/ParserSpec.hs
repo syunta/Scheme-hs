@@ -5,7 +5,8 @@ import Parser
 import Types
 
 parse :: String -> SObj
-parse = fst . parseExprs
+parse input = case parseExprs input of
+                Right (expr, _) -> expr
 
 spec :: Spec
 spec = do
@@ -33,5 +34,5 @@ spec = do
       parse "#t" `shouldBe` SBool True
       parse "#f" `shouldBe` SBool False
     it "parse a unit of syntax" $ do
-      parseExprs "1 2" `shouldBe` (SInt 1, " 2")
-      parseExprs "(1) (2 3)" `shouldBe` (SList [SInt 1] Nil, " (2 3)")
+      parseExprs "1 2" `shouldBe` Right (SInt 1, " 2")
+      parseExprs "(1) (2 3)" `shouldBe` Right (SList [SInt 1] Nil, " (2 3)")

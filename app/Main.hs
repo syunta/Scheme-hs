@@ -14,17 +14,21 @@ run env = do
       run newEnv
 
 evalPrint :: String -> Env -> IO Env
-evalPrint x env = do
-  let (expr, rest) = parseExprs x
-      result = evl expr env
-  case result of
-    Right (val, newEnv) -> do
-      print val
-      case rest of
-        [] -> return newEnv
-        _  -> evalPrint rest newEnv
-    Left err -> do
-      print err
+evalPrint input env = do
+  case parseExprs input of
+    Right (expr, rest) -> do
+      let result = evl expr env
+      case result of
+        Right (val, newEnv) -> do
+          print val
+          case rest of
+            [] -> return newEnv
+            _  -> evalPrint rest newEnv
+        Left err -> do
+          print err
+          return env
+    Left perr -> do
+      print perr
       return env
 
 readPrompt :: IO String

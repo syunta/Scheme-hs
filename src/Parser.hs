@@ -11,10 +11,8 @@ import Control.Monad
 import Text.Parsec
 import Data.Functor.Identity
 
-parseExprs :: String -> (SObj, String)
-parseExprs input = case parse chunk "" input of
-                     Right x -> x
-                     _       -> (Nil, "") -- error
+parseExprs :: String -> Either ParseError (SObj, String)
+parseExprs = parse chunk "Parsing"
 
 chunk :: ParsecT String u Identity (SObj, String)
 chunk = do

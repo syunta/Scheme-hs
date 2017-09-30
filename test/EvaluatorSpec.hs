@@ -7,7 +7,8 @@ import Types
 import Env
 
 parse' :: String -> SError SObj
-parse' str = Right $ fst . parseExprs $ str
+parse' str = case parseExprs str of
+               Right (expr, _) -> Right $ expr
 
 parseEval :: String -> SError SObj
 parseEval str = do
