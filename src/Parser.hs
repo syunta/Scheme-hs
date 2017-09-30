@@ -1,6 +1,6 @@
 module Parser
 (
-  parse, parseTokens, tokenize
+  parseExpr, parseTokens, tokenize
 ) where
 
 import Types
@@ -19,8 +19,8 @@ separate ts =
       t ("", ys) = [head ys] : separate (tail ys)
       t (xs, ys) = [xs, [head ys]] ++ separate (tail ys)
 
-parse :: String -> (SObj, [String])
-parse str = parseTokens (tokenize str)
+parseExpr :: String -> (SObj, [String])
+parseExpr str = parseTokens (tokenize str)
 
 parseTokens :: [String] -> (SObj, [String])
 parseTokens ("(":ts) = parseList (SList [] Nil, ts)
