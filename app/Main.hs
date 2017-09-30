@@ -10,13 +10,12 @@ run env = do
     "exit" -> return ()
     ""     -> run env
     _      -> do
-      let tokens = tokenize input
-      newEnv <- evalPrint tokens env
+      newEnv <- evalPrint input env
       run newEnv
 
-evalPrint :: [String] -> Env -> IO Env
+evalPrint :: String -> Env -> IO Env
 evalPrint x env = do
-  let (expr, rest) = parseTokens x
+  let (expr, rest) = parseExprs x
       result = evl expr env
   case result of
     Right (val, newEnv) -> do

@@ -1,51 +1,80 @@
 module Parser
 (
-  parseExpr, parseTokens, tokenize
+  parseExprs
 ) where
 
 import Types
 import Text.Read
+import Data.Char
+import Data.Maybe
+import Control.Monad
+import Text.Parsec
+import Data.Functor.Identity
 
-tokenize :: String -> [String]
-tokenize = concatMap separate . words
+parseExprs :: String -> (SObj, String)
+parseExprs input = case parse chunk "" input of
+                     Right x -> x
+                     _       -> (Nil, "") -- error
 
-separate :: String -> [String]
-separate ts =
-  t $ break (`elem` ".()'") ts
-    where
-      t ("", "") = []
-      t (xs, "") = [xs]
-      t ("", '(' : ')' : ys) = "()" : separate ys
-      t ("", ys) = [head ys] : separate (tail ys)
-      t (xs, ys) = [xs, [head ys]] ++ separate (tail ys)
+chunk :: ParsecT String u Identity (SObj, String)
+chunk = do
+  first <- spaces >> parseExpr
+  rest <- getInput
+  return (first, rest)
 
-parseExpr :: String -> (SObj, [String])
-parseExpr str = parseTokens (tokenize str)
+parseExpr :: ParsecT String u Identity SObj
+parseExpr = parseQuote <|> parseAtom <|> parseList
 
-parseTokens :: [String] -> (SObj, [String])
-parseTokens ("(":ts) = parseList (SList [] Nil, ts)
-parseTokens ("'":ts) = parseQuote ts
-parseTokens (t:ts)   = (parseAtom t, ts)
+parseList :: ParsecT String u Identity SObj
+parseList = try parseNil <|> do
+  char '('
+  spaces
+  results <- sepEndBy parseExpr spaces
+  tail <- parseTail
+  return $ SList results tail
 
-parseList :: (SObj, [String]) -> (SObj, [String])
-parseList (SList exps tail, ")":ts) = (SList (reverse exps) tail, ts)
-parseList (SList exps _,    ".":ts) =
-  let (tail, restTokens) = parseTokens ts in
-      parseList (SList exps tail, restTokens)
-parseList (SList exps tail, ts) =
-  let (exp, restTokens) = parseTokens ts in
-      parseList (SList (exp : exps) tail, restTokens)
+parseNil :: ParsecT String u Identity SObj
+parseNil = do
+  string "()"
+  return Nil
 
-parseQuote :: [String] -> (SObj, [String])
-parseQuote ts =
-  let (exps, restTokens) = parseTokens ts in
-    (SList [SSymbol "quote", exps] Nil, restTokens)
+parseTail :: ParsecT String u Identity SObj
+parseTail = do
+  last <- char ')' <|> char '.'
+  case last of
+    ')' -> return Nil
+    '.' -> do
+      tail <- spaces >> parseExpr
+      spaces >> char ')'
+      return tail
 
-parseAtom :: String -> SObj
-parseAtom token
-  | (Nothing /=) mval = let (Just val) = mval in SInt val
-  | token == "#t" = SBool True
-  | token == "#f" = SBool False
-  | token == "()" = Nil
-  | otherwise = SSymbol token
-    where mval = readMaybe token :: Maybe Int
+parseQuote :: ParsecT String u Identity SObj
+parseQuote = do
+  char '\''
+  quoted <- parseExpr
+  return $ SList [SSymbol "quote", quoted] Nil
+
+parseAtom :: ParsecT String u Identity SObj
+parseAtom = parseInteger <|> parseBool <|> parseSymbol
+
+parseInteger :: ParsecT String u Identity SObj
+parseInteger = do
+  result <- many1 digit
+  let integer = read result
+  return $ SInt integer
+
+parseBool :: ParsecT String u Identity SObj
+parseBool = do
+  result <- char '#' >> (char 't' <|> char 'f')
+  case result of
+    't' -> return $ SBool True
+    'f' -> return $ SBool False
+
+symbolChars :: String
+symbolChars = "~!#@$%^&*-_=+:/?<>"
+
+parseSymbol :: ParsecT String u Identity SObj
+parseSymbol = do
+  first <- letter <|> oneOf symbolChars
+  rest <- many (letter <|> digit <|> oneOf symbolChars)
+  return $ SSymbol (first:rest)
