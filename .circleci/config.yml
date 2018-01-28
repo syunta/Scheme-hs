@@ -1,0 +1,10 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: fpco/stack-build:lts-9.14
+    working_directory: ~/Scheme-hs
+    steps:
+      - checkout
+      - run: stack setup
+      - run: stack test
